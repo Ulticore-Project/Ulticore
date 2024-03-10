@@ -23,7 +23,7 @@ if(version_compare("8.0.0", PHP_VERSION) > 0){
 }
 
 if(php_sapi_name() !== "cli"){
-	console("[ERROR] You must run NostalgiaCore using the CLI.", true, true, 0);
+	console("[ERROR] You must run Scaxe-Legacy using the CLI.", true, true, 0);
 	++$errors;
 }
 

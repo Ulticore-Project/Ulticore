@@ -1,15 +1,15 @@
 #!/bin/bash
 echo "==================================="
-echo "NostalgiaCore Installer"
+echo "Scaxe-Legacy Installer"
 echo "==================================="
-echo "["$(date +%k:%M)"] Downloading NostalgiaCore..."
+echo "["$(date +%k:%M)"] Downloading Scaxe-Legacy..."
 apt install git
-git clone https://github.com/kotyaralih/NostalgiaCore
+git clone https://github.com/kotyaralih/Scaxe-Legacy
 echo "["$(date +%k:%M)"] Extracting..."
-cd NostalgiaCore
+cd Scaxe-Legacy
 mv * ../
 cd ../
-rm -r NostalgiaCore
+rm -r Scaxe-Legacy
 rm bin.7z
 echo "["$(date +%k:%M)"] Downloading PHP..."
 arch=$(uname -m)

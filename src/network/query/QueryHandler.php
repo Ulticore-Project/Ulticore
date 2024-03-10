@@ -38,7 +38,7 @@ class QueryHandler{
 
 	public function regenerateInfo(){
 		$str = "";
-		$plist = "NostalgiaCore " . MAJOR_VERSION;
+		$plist = "Scaxe-Legacy " . MAJOR_VERSION;
 		if($this->server->extraprops->get("query-plugins") == true){
 			$pl = $this->server->api->plugin->getList();
 			if(count($pl) > 0){

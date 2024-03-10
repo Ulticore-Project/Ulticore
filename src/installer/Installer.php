@@ -11,7 +11,7 @@
 		
 		private $lang, $config;
 		public function __construct(){
-			echo "[*] NostalgiaCore set-up wizard\n";
+			echo "[*] Scaxe-Legacy set-up wizard\n";
 			echo "[*] Please select a language:\n";
 			foreach(InstallerLang::$languages as $short => $native){
 				echo " $native => $short\n";
@@ -171,24 +171,8 @@ LICENSE;
 
 	class InstallerLang{
 		public static $languages = array(
-			"ru" => "Pyccĸий",
 			"en" => "English",
-			"es" => "Español",
 			"zh" => "中文",
-			"ja" => "日本語",
-			"de" => "Deutsch",
-			//"vi" => "Tiếng Việt",
-			"ko" => "한국어",
-			"fr" => "Français",
-			"it" => "Italiano",	
-			//"lv" => "Latviešu",
-			"nl" => "Nederlands",
-			//"pt" => "Português",
-			"sv" => "Svenska",
-			"fi" => "Suomi",
-			"tr" => "Türkçe",
-			"uk" => "Український"
-			//"et" => "Eesti",
 		);
 		private $texts = array();
 		private $lang;
