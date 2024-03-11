@@ -72,8 +72,8 @@ class PocketMinecraftServer{
 		if(!defined("NO_THREADS")){
 			$this->asyncThread = new AsyncMultipleQueue();
 		}
-		console("[INFO] Loading extra.properties...");
-		$this->extraprops = new Config(DATA_PATH . "extra.properties", CONFIG_PROPERTIES, [
+		console("[INFO] Loading extra.yml...");
+		$this->extraprops = new Config(DATA_PATH . "extra.yml", CONFIG_YAML, [
 			"version" => "5",
 			"enable-nether-reactor" => true,
 			"enable-explosions" => true,
@@ -89,7 +89,11 @@ class PocketMinecraftServer{
 			"16x16x16_chunk_sending" => false,
 			"experimental-mob-ai" => false,	
 			"force-20-tps" => false,
-			"enable-mob-pushing" => Living::$entityPushing
+			"enable-mob-pushing" => Living::$entityPushing,
+			
+			"Scaxe-Legacy" =>[
+				
+			]
 		]);
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
