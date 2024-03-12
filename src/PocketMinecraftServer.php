@@ -92,10 +92,13 @@ class PocketMinecraftServer{
 			"enable-mob-pushing" => Living::$entityPushing,
 			
 			"Scaxe-Legacy" =>[
-				
+				"max-chunks-per-tick" => 4,
+                "view-distance" => 32, //暂未测试 故放大数
 			]
 		]);
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
+        Player::$maxChunksPerTick = $this->extraprops->getNested("Scaxe-Legacy.max-chunks-per-tick", 4);
+        Player::$viewDistance = $this->extraprops->getNested("Scaxe-Legacy.view-distance", 8);
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Living::$entityPushing = $this->extraprops->get("enable-mob-pushing");
