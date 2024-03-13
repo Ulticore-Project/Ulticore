@@ -10,3 +10,4 @@ The following content is only in Chinese
 # 新特性/新内容
 
 • 可自定义的，性能更强(?)的区块发送系统
+• 高效率的tickProcessor

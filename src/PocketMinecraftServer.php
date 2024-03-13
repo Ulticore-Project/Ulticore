@@ -11,7 +11,6 @@ class PocketMinecraftServer{
 	private $serverip, $evCnt, $handCnt, $events, $eventsID, $handlers, $serverType, $lastTick, $memoryStats, $async = [], $asyncID = 0;
 	
 	public $doTick, $levelData, $tiles, $entities, $schedule, $scheduleCnt, $whitelist, $spawn, $difficulty, $stop, $asyncThread;
-	public static $FORCE_20_TPS = false;
 	function __construct($name, $gamemode = SURVIVAL, $seed = false, $port = 19132, $serverip = "0.0.0.0"){
 		$this->port = (int) $port;
 		$this->doTick = true;
@@ -87,13 +86,12 @@ class PocketMinecraftServer{
 			"despawn-mobs" => true, 
 			"mob-despawn-ticks" => 18000,
 			"16x16x16_chunk_sending" => false,
-			"experimental-mob-ai" => false,	
-			"force-20-tps" => false,
+			"experimental-mob-ai" => false,
 			"enable-mob-pushing" => Living::$entityPushing,
 			
 			"Scaxe-Legacy" =>[
 				"max-chunks-per-tick" => 4,
-                "view-distance" => 8, //暂未测试 故放大数
+                "view-distance" => 8,
 			]
 		]);
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
@@ -102,14 +100,10 @@ class PocketMinecraftServer{
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Living::$entityPushing = $this->extraprops->get("enable-mob-pushing");
-		self::$FORCE_20_TPS = $this->extraprops->get("force-20-tps");
 		PocketMinecraftServer::$SAVE_PLAYER_DATA = $this->extraprops->get("save-player-data");
 		MobController::$ADVANCED = $this->extraprops->get("experimental-mob-ai");
 		Explosion::$enableExplosions = $this->extraprops->get("enable-explosions");
 		NetherReactorBlock::$enableReactor = $this->extraprops->get("enable-nether-reactor");
-		if(self::$FORCE_20_TPS){
-			ConsoleAPI::warn("Forcing 20 tps. This may result in higher CPU usage!");
-		}
 		if($this->extraprops->get("discord-msg") == true){
 			if($this->extraprops->get("discord-webhook-url") !== "none"){
 				console("[INFO] Discord Logger is enabled.");
@@ -477,39 +471,24 @@ class PocketMinecraftServer{
 
 	public function process()
 	{
-		$lastLoop = 0;
-		
-		if(self::$FORCE_20_TPS){
-			while($this->stop === false){
-				$packet = $this->interface->readPacket();
-				if($packet instanceof Packet) $this->packetHandler($packet);
-				$this->tick();
-			}
-		}else{
-			while($this->stop === false){
-				$packet = $this->interface->readPacket();
-				if($packet instanceof Packet){
-					$this->packetHandler($packet);
-					$lastLoop = 0;
-				} elseif($this->tick() > 0){
-					$lastLoop = 0;
-				} else{
-					++$lastLoop;
-					if($lastLoop < 16){
-						usleep(1);
-					} elseif($lastLoop < 128){
-						usleep(100);
-					} elseif($lastLoop < 256){
-						usleep(512);
-					} else{
-						usleep(10000);
-					}
-				}
-				$this->tick();
-			}
-		}
-		
-		
+        /*
+         * 改进的主循环
+         * 改进前（FORCE_20_TPS） CPU占用12% TPS20.5左右
+         * 改进后 CPU占用0.3-0.4 TPS 19.7 - 20.3
+         */
+        $nextTick = microtime(true);
+        while($this->stop === false){
+            $nextTick += 0.001;
+
+            $packet = $this->interface->readPacket(); //网络层 TPS1000
+            if($packet instanceof Packet) $this->packetHandler($packet);
+
+            $this->tick(); //Server TPS20
+
+            if(($nextTick - 0.0001) > microtime(true)){
+                time_sleep_until($nextTick);
+            }
+        }
 	}
 
 	public function packetHandler(Packet $packet){
@@ -598,21 +577,23 @@ class PocketMinecraftServer{
 
 	public function tick(){
 		$time = microtime(true);
-		if($this->lastTick <= ($time - 0.05)){
-			$this->tickMeasure[] = $this->lastTick = $time;
-			unset($this->tickMeasure[key($this->tickMeasure)]);
-			++$this->ticks;
+		if($time - $this->lastTick < 0.05){
+            //var_dump($time - $this->lastTick);
+            return;
+        }
+        unset($this->tickMeasure[key($this->tickMeasure)]);
+        ++$this->ticks;
 			
-			foreach($this->clients as $client){
-				$client->handlePacketQueues();
-			}
+        foreach($this->clients as $client){
+            $client->handlePacketQueues();
+        }
 			
-			foreach($this->api->level->levels as $l){
-				$l->onTick($this, $time);
-			}
-			return $this->tickerFunction($time);
-		}
-		return 0;
+        foreach($this->api->level->levels as $l){
+            $l->onTick($this, $time);
+        }
+
+        $this->tickMeasure[] = $this->lastTick = microtime(true);
+        $this->tickerFunction($time);
 	}
 
 	public function tickerFunction($time){
