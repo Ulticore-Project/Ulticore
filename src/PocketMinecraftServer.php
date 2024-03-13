@@ -93,7 +93,7 @@ class PocketMinecraftServer{
 			
 			"Scaxe-Legacy" =>[
 				"max-chunks-per-tick" => 4,
-                "view-distance" => 32, //暂未测试 故放大数
+                "view-distance" => 8, //暂未测试 故放大数
 			]
 		]);
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");

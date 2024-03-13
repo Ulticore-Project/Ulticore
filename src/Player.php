@@ -265,7 +265,7 @@ class Player{
 			$this->entity->updateLast();
 			$this->entity->calculateVelocity();
 			if($terrain === true){
-				$this->orderChunks();
+				//$this->orderChunks();
 				$this->getNextChunk($this->level);
 			}
 			$this->entity->check = true;
@@ -440,6 +440,7 @@ class Player{
 		if(!($this->entity instanceof Entity) or $this->connected === false){
 			return false;
 		}
+
 		$X = ((int)$this->entity->x) >> 4;
 		$Z = ((int)$this->entity->z) >> 4;
 		$this->chunksOrder = [];
@@ -479,6 +480,7 @@ class Player{
 		}
 		
 		asort($this->chunksOrder);
+        $this->server->schedule(50, [$this, "orderChunks"], []); //这不应该实时更新吗？
 	}
 	
 	public function loaddAllChunks(){
@@ -1634,7 +1636,7 @@ class Player{
 
 						$this->sendInventory();
 						$this->sendSettings();
-						$this->server->schedule(50, [$this, "orderChunks"], []);
+						$this->orderChunks();
 						$this->blocked = false;
 
 						$this->server->send2Discord($this->username . " joined the game");
