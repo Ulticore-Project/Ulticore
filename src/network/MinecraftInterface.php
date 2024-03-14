@@ -4,37 +4,36 @@ class MinecraftInterface{
 
 	public $bandwidth;
 	private $socket;
+    private $UDPserver;
 	private $packets;
 	public $start;
 	function __construct($server, $port = 25565, $serverip = "0.0.0.0"){
-		$this->socket = new UDPSocket($server, $port, true, $serverip);
-		if($this->socket->connected === false){
-			console("[SEVERE] Couldn't bind to $serverip:" . $port, true, true, 0);
-			exit(1);
-		}
+		//$this->socket = new UDPSocket($server, $port, true, $serverip);
+        $this->UDPserver = new UDPServer($server, $port, true, $serverip);
+
 		$this->bandwidth = [0, 0, microtime(true)];
 		$this->start = microtime(true);
 		$this->packets = [];
 	}
 
 	public function close(){
-		return $this->socket->close(false);
+        $this->UDPserver->shutdown();
 	}
 
 	public function readPacket(){
-		if($this->socket->connected === false){
+		if($this->UDPserver->shutdown === true){
 			return false;
 		}
 		$buf = "";
 		$source = false;
 		$port = 1;
-		$len = $this->socket->read($buf, $source, $port);
+		$len = $this->UDPserver->readThreadToMainPacket($buf, $source, $port);
 		if($len === false or $len === 0){
-			return false;
+			return -1;
 		}
 		$this->bandwidth[0] += $len;
 		ServerAPI::request()->api->dhandle("mcinterface.read", ["buffer" => $buf, "source" => $source, "port" => $port]);
-		return $this->parsePacket($buf, $source, $port);
+        return $this->parsePacket($buf, $source, $port);
 	}
 
 	private function parsePacket($buffer, $source, $port){
@@ -76,8 +75,8 @@ class MinecraftInterface{
 		}elseif($packet instanceof RakNetPacket){
 			$codec = new RakNetCodec($packet);
 		}
-		$write = $this->socket->write($packet->buffer, $packet->ip, $packet->port);
-		$this->bandwidth[1] += $write;
-		return $write;
+		$this->UDPserver->pushMainToThreadPacket($packet->buffer, $packet->ip, $packet->port);
+		$this->bandwidth[1] += strlen($packet->buffer);
+        return true;
 	}
 }

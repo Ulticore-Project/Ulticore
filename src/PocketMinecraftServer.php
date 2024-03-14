@@ -11,6 +11,7 @@ class PocketMinecraftServer{
 	private $serverip, $evCnt, $handCnt, $events, $eventsID, $handlers, $serverType, $lastTick, $memoryStats, $async = [], $asyncID = 0;
 	
 	public $doTick, $levelData, $tiles, $entities, $schedule, $scheduleCnt, $whitelist, $spawn, $difficulty, $stop, $asyncThread;
+    public $nextTick = 0;
 	function __construct($name, $gamemode = SURVIVAL, $seed = false, $port = 19132, $serverip = "0.0.0.0"){
 		$this->port = (int) $port;
 		$this->doTick = true;
@@ -474,19 +475,21 @@ class PocketMinecraftServer{
         /*
          * 改进的主循环
          * 改进前（FORCE_20_TPS） CPU占用12% TPS20.5左右
-         * 改进后 CPU占用0.3-0.4 TPS 19.7 - 20.3
+         * 改进后 CPU占用0.1 TPS 20.5
          */
-        $nextTick = microtime(true);
+        $this->nextTick = microtime(true);
         while($this->stop === false){
-            $nextTick += 0.001;
 
-            $packet = $this->interface->readPacket(); //网络层 TPS1000
-            if($packet instanceof Packet) $this->packetHandler($packet);
+            $packet = $this->interface->readPacket();
+            while($packet instanceof Packet){
+                $this->packetHandler($packet);
+                $packet = $this->interface->readPacket();
+            }
 
-            $this->tick(); //Server TPS20
+            $this->tick();
 
-            if(($nextTick - 0.0001) > microtime(true)){
-                time_sleep_until($nextTick);
+            if(($this->nextTick - 0.0001) > microtime(true)){
+                time_sleep_until($this->nextTick - 0.0001);
             }
         }
 	}
@@ -577,10 +580,10 @@ class PocketMinecraftServer{
 
 	public function tick(){
 		$time = microtime(true);
-		if($time - $this->lastTick < 0.05){
-            //var_dump($time - $this->lastTick);
+        if(($time - $this->nextTick) < 0){
             return;
         }
+
         unset($this->tickMeasure[key($this->tickMeasure)]);
         ++$this->ticks;
 			
@@ -594,6 +597,12 @@ class PocketMinecraftServer{
 
         $this->tickMeasure[] = $this->lastTick = microtime(true);
         $this->tickerFunction($time);
+
+        if(($this->nextTick - $time) < -1){
+            $this->nextTick = $time;
+        }else{
+            $this->nextTick += 0.05;
+        }
 	}
 
 	public function tickerFunction($time){
