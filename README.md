@@ -17,4 +17,4 @@ The following content is only in Chinese
 
 # 联系我们/Contact us
 
-QQ Group: 684977637
+discord: Sunch233#3226
