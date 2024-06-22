@@ -63,7 +63,7 @@ class UDPServer extends Worker{
     public function tickProcessor(){
         $socket = new UDPSocket($this->server, $this->port, $this->listen, $this->serverip);
         if($socket->connected === false){
-            console("[SEVERE] Couldn't bind to $serverip:" . $port, true, true, 0);
+            console("[SEVERE] Couldn't bind to $this->serverip:" . $this->port, true, true, 0);
             $this->shutdown = true;
         }
 

@@ -8,7 +8,6 @@ class MinecraftInterface{
 	private $packets;
 	public $start;
 	function __construct($server, $port = 25565, $serverip = "0.0.0.0"){
-		//$this->socket = new UDPSocket($server, $port, true, $serverip);
         $this->UDPserver = new UDPServer($server, $port, true, $serverip);
 
 		$this->bandwidth = [0, 0, microtime(true)];
