@@ -217,4 +217,16 @@ class ItemEntity extends Entity{
 		++$this->age;
 		//TODO despawn after age >= 6000 ?; 
 	}
+
+    public function createSaveData(){
+        $data = parent::createSaveData();
+        $data["Item"] = [
+            "id" => $this->itemID,
+            "Damage" => $this->meta,
+            "Count" => $this->stack,
+        ];
+
+        $data["id"] = 64; //ty shoghicp
+        return $data;
+    }
 }

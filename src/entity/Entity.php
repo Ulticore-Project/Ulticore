@@ -1294,15 +1294,6 @@ class Entity extends Position
 		if($this->class === ENTITY_FALLING){
 			$data["Tile"] = $this->data["Tile"];
 		}
-		if($this->class === ENTITY_ITEM){
-			$data["Item"] = [
-				"id" => $this->itemID,
-				"Damage" => $this->meta,
-				"Count" => $this->stack,
-			];
-			
-			$data["id"] = 64; //ty shoghicp
-		}
 		return $data;
 	}
  
