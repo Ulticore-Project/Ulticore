@@ -4,6 +4,7 @@ class TaskTempt extends TaskBase
 {
 	public function __construct($speed){
 		$this->speedMultiplier = $speed;
+		$this->targetDistance = 10*10;
 	}
 	
 	public function onStart(EntityAI $ai)
@@ -13,12 +14,14 @@ class TaskTempt extends TaskBase
 	
 	public function onEnd(EntityAI $ai)
 	{
+		$ai->entity->target = false;
 	}
 	
 	public function onUpdate(EntityAI $ai)
 	{
 		if(!$this->isTargetValid($ai) || $ai->entity->inPanic || $ai->isStarted("TaskMate")){
 			$this->reset();
+			$this->onEnd($ai);
 			return false;
 		}
 		
@@ -28,8 +31,10 @@ class TaskTempt extends TaskBase
 		$zdiff = ($target->z - $ai->entity->z);
 		$dist = $xdiff*$xdiff + $ydiff*$ydiff + $zdiff*$zdiff;
 		$ai->mobController->setLookPosition($target->x, $target->y + $target->getEyeHeight(), $target->z, 30, $ai->entity->getVerticalFaceSpeed());
-		if($dist >= 6.25){ //TODO update yaw even if dist is less
+		if($dist >= 6.25){
 			$ai->mobController->setMovingTarget($target->x, $target->y, $target->z, $this->speedMultiplier);
+		}else{
+			$ai->mobController->headYawIsYaw = true;
 		}
 		
 		
@@ -42,7 +47,7 @@ class TaskTempt extends TaskBase
 			$xDiff = ($t->x - $e->x);
 			$yDiff = ($t->y - $e->y);
 			$zDiff = ($t->z - $e->z);
-			return ($xDiff*$xDiff + $yDiff*$yDiff + $zDiff*$zDiff) <= 36;
+			return ($xDiff*$xDiff + $yDiff*$yDiff + $zDiff*$zDiff) <= $this->targetDistance;
 		}
 		return false;
 	}
@@ -59,27 +64,12 @@ class TaskTempt extends TaskBase
 			$xDiff = ($t->x - $e->x);
 			$yDiff = ($t->y - $e->y);
 			$zDiff = ($t->z - $e->z);
-			if(($xDiff*$xDiff + $yDiff*$yDiff + $zDiff*$zDiff) <= 36){
+			if(($xDiff*$xDiff + $yDiff*$yDiff + $zDiff*$zDiff) <= $this->targetDistance){
 				return true;
 			}
 		}
-		$bestTargetDistance = INF;
-		$closestTarget = null;
-		foreach($e->level->players as $p){
-			if($p->spawned && $e->isFood($p->getHeldItem()->id)){
-				$pt = $p->entity;
-				$xDiff = $pt->x - $e->x;
-				$yDiff = $pt->y - $e->y;
-				$zDiff = $pt->z - $e->z;
-				$d = ($xDiff*$xDiff + $yDiff*$yDiff + $zDiff*$zDiff);
-				if($d <= 36){
-					if($bestTargetDistance >= $d){
-						$closestTarget = $pt;
-						$bestTargetDistance = $d;
-					}
-				}
-			}
-		}
+		
+		$closestTarget = $e->closestPlayerThatCanFeedDist <= $this->targetDistance ? $e->level->entityList[$e->closestPlayerThatCanFeedEID] : null;
 		
 		if($closestTarget != null){
 			$e->target = $closestTarget; //TODO dont save entity object ?

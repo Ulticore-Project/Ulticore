@@ -12,6 +12,8 @@ class PocketMinecraftServer{
 	
 	public $doTick, $levelData, $tiles, $entities, $schedule, $scheduleCnt, $whitelist, $spawn, $difficulty, $stop, $asyncThread;
     public $nextTick = 0;
+	public static $KEEP_CHUNKS_LOADED = true;
+	
 	function __construct($name, $gamemode = SURVIVAL, $seed = false, $port = 19132, $serverip = "0.0.0.0"){
 		$this->port = (int) $port;
 		$this->doTick = true;
@@ -34,6 +36,7 @@ class PocketMinecraftServer{
 		}*/
 		console("[INFO] Starting Minecraft PE server on " . ($this->serverip === "0.0.0.0" ? "*" : $this->serverip) . ":" . $this->port);
 		EntityRegistry::registerEntities();
+		PlayerNull::$INSTANCE = new PlayerNull();
 		Feature::init();
 		Biome::init();
 		StaticBlock::init();
@@ -48,7 +51,7 @@ class PocketMinecraftServer{
 		$this->handlers = [];
 		$this->invisible = false;
 		$this->levelData = false;
-		$this->difficulty = 1;
+		$this->difficulty = 2;
 		$this->tiles = [];
 		$this->entities = [];
 		$this->custom = [];
@@ -89,6 +92,7 @@ class PocketMinecraftServer{
 			"16x16x16_chunk_sending" => false,
 			"experimental-mob-ai" => false,
 			"enable-mob-pushing" => Living::$entityPushing,
+			"keep-chunks-loaded" => self::$KEEP_CHUNKS_LOADED,
 			
 			"Scaxe-Legacy" =>[
 				"max-chunks-per-tick" => 4,
@@ -101,6 +105,7 @@ class PocketMinecraftServer{
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Living::$entityPushing = $this->extraprops->get("enable-mob-pushing");
+		self::$KEEP_CHUNKS_LOADED = $this->extraprops->get("keep-chunks-loaded");
 		PocketMinecraftServer::$SAVE_PLAYER_DATA = $this->extraprops->get("save-player-data");
 		MobController::$ADVANCED = $this->extraprops->get("experimental-mob-ai");
 		Explosion::$enableExplosions = $this->extraprops->get("enable-explosions");
@@ -196,12 +201,11 @@ class PocketMinecraftServer{
 			console("[WARNING] Can't keep up! Is the server overloaded?");
 		}
 	}
-
+	private static $_tmp;
 	/**
 	 * @param string $reason
 	 */
 	public function close($reason = "server stop"){
-		usleep(2);
 		$this->onShutdown();
 		if($this->stop !== true){
 			if(is_int($reason)){
@@ -210,13 +214,12 @@ class PocketMinecraftServer{
 			if(($this->api instanceof ServerAPI) === true){
 				if(($this->api->chat instanceof ChatAPI) === true){
 					$this->api->chat->send(false, "Stopping server...");
-					new StopMessageThread($this, "[INFO] Stopping server..."); //broadcast didnt want to send message to discord for some reason
+					self::$_tmp = new StopMessageThread($this, "[INFO] Stopping server..."); //broadcast didnt want to send message to discord for some reason
 				}
 			}
 			$this->stop = true;
 			$this->trigger("server.close", $reason);
 			$this->interface->close();
-
 			if(!defined("NO_THREADS")){
 				$this->asyncThread->synchronized(function ($t){
 					$t->stop = true;
@@ -448,6 +451,7 @@ class PocketMinecraftServer{
 		if(!is_callable($callback)){
 			return false;
 		}
+		
 		$chcnt = $this->scheduleCnt++;
 		$this->schedule[$chcnt] = [$callback, $data, $eventName];
 		$this->query("INSERT INTO actions (ID, interval, last, repeat) VALUES(" . $chcnt . ", " . ($ticks / 20) . ", " . microtime(true) . ", " . (((bool) $repeat) === true ? 1 : 0) . ");");
@@ -590,7 +594,6 @@ class PocketMinecraftServer{
         foreach($this->clients as $client){
             $client->handlePacketQueues();
         }
-			
         foreach($this->api->level->levels as $l){
             $l->onTick($this, $time);
         }

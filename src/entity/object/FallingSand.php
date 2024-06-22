@@ -16,6 +16,10 @@ class FallingSand extends Entity{
 		$this->gravity = 0.04;
 	}
 	
+	public function isPickable(){
+		return !$this->dead;
+	}
+	
 	public function update($now){
 		if($this->closed) return;
 		
@@ -43,7 +47,7 @@ class FallingSand extends Entity{
 				$this->close();
 				//TODO vanilla-like checking?
 				$this->level->fastSetBlockUpdate($x, $y, $z, $this->data["Tile"], 0); //TODO add metadata
-			}else if(($blockAt = $this->level->level->getBlockID($x, $y, $z)) != 0){
+			}elseif(($blockAt = $this->level->level->getBlockID($x, $y, $z)) != 0){
 				//TODO vanilla-like checking?
 				if(StaticBlock::getIsTransparent($blockAt) && !StaticBlock::getIsLiquid($blockAt)){
 					$this->close();

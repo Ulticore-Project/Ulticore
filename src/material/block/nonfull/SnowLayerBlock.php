@@ -8,7 +8,9 @@ class SnowLayerBlock extends FlowableBlock{
 		$this->isFullBlock = false;
 		$this->hardness = 0.5;
 	}
-	
+	public static function getAABB(Level $level, $x, $y, $z){
+		return null;
+	}
 	public function place(Item $item, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
 		$down = $this->getSide(0);
 		if($down instanceof SolidBlock){
@@ -18,14 +20,10 @@ class SnowLayerBlock extends FlowableBlock{
 		return false;
 	}
 	
-	public function onUpdate($type){
-		if($type === BLOCK_UPDATE_NORMAL){
-			if($this->getSide(0)->getID() === AIR){ //Replace with common break method
-				$this->level->setBlock($this, new AirBlock(), true, false, true);
-				return BLOCK_UPDATE_NORMAL;
-			}
+	public static function neighborChanged(Level $level, $x, $y, $z, $nX, $nY, $nZ, $oldID){
+		if($level->level->getBlockID($x, $y - 1, $z) == AIR){ //Replace with common break method
+			$level->fastSetBlockUpdate($x, $y, $z, 0, 0, true);
 		}
-		return false;
 	}
 	
 	public function getDrops(Item $item, Player $player){

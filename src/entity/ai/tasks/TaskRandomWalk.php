@@ -26,18 +26,18 @@ class TaskRandomWalk extends TaskBase
 
 	public function onUpdate(EntityAI $ai)
 	{
-		if(($ai->entity instanceof Creeper && $ai->entity->isIgnited()) || $ai->isStarted("TaskTempt") || $ai->isStarted("TaskFollowParent") ) {
+		if(($ai->entity instanceof Creeper && $ai->entity->isIgnited()) || $ai->isStarted("TaskTempt") || $ai->isStarted("TaskFollowParent") || $ai->isStarted("TaskRangedAttack")) {
 			$this->reset();
 			return false; //TODO Better way: block movement
 		}
+		
 		--$this->selfCounter;
 		$ai->mobController->setMovingOffset($this->x, 0, $this->z, $this->speedMultiplier);
-		//TODO fix $ai->mobController->moveNonInstant($this->x, 0, $this->z);
 	}
 
 	public function canBeExecuted(EntityAI $ai)
 	{
-		if(($ai->entity instanceof Creeper && $ai->entity->isIgnited()) || $ai->entity->hasPath() || $ai->isStarted("TaskTempt") ||$ai->isStarted("TaskAttackPlayer")) {
+		if(($ai->entity instanceof Creeper && $ai->entity->isIgnited()) || $ai->entity->hasPath() || $ai->isStarted("TaskTempt") || $ai->isStarted("TaskAttackPlayer") || $ai->isStarted("TaskRangedAttack")) {
 			return false;
 		} // i really need mutexBits
 		return !$ai->entity->inPanic && !$ai->isStarted("TaskMate")  && !$ai->isStarted("TaskEatTileGoal") && !$ai->isStarted("TaskLookAround") && !$ai->isStarted("TaskFollowParent") && !$ai->isStarted("TaskLookAtPlayer") && mt_rand(0, 120) == 0;

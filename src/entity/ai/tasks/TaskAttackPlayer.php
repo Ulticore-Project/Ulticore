@@ -22,6 +22,7 @@ class TaskAttackPlayer extends TaskBase
 	{
 		if(!$this->isTargetValid($ai)){
 			$this->reset();
+			$this->onEnd($ai);
 			return false;
 		}
 		$ai->mobController->setMovingTarget($ai->entity->target->x, $ai->entity->target->y, $ai->entity->target->z, $this->speedMultiplier);
@@ -68,23 +69,8 @@ class TaskAttackPlayer extends TaskBase
 				return true;
 			}
 		}
-		$bestTargetDistance = INF;
-		$closestTarget = null;
-		foreach($e->level->players as $p){
-			if($p->spawned){
-				$pt = $p->entity;
-				$xDiff = $pt->x - $e->x;
-				$yDiff = $pt->y - $e->y;
-				$zDiff = $pt->z - $e->z;
-				$d = ($xDiff*$xDiff + $yDiff*$yDiff + $zDiff*$zDiff);
-				if($d <= $this->rangeSquared){
-					if($bestTargetDistance >= $d){
-						$closestTarget = $pt;
-						$bestTargetDistance = $d;
-					}
-				}
-			}
-		}
+		
+		$closestTarget = $e->closestPlayerDist <= $this->rangeSquared ? $e->level->entityList[$e->closestPlayerEID] : null;
 		
 		if($closestTarget != null){
 			$e->target = $closestTarget; //TODO dont save entity object ?
@@ -100,7 +86,7 @@ class TaskAttackPlayer extends TaskBase
 	
 	public function onEnd(EntityAI $ai)
     {
-		
+		$ai->entity->target = false;
 	}
 
 }

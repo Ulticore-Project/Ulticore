@@ -3,6 +3,9 @@
 abstract class Living extends Entity implements Pathfindable{
 	
 	public static $despawnMobs, $despawnTimer, $entityPushing = false;
+	
+	public static $pathfinderTest = false;
+	
 	public $moveStrafing, $moveForward;
 	/**
 	 * @var Entity $target
@@ -21,19 +24,29 @@ abstract class Living extends Entity implements Pathfindable{
 	public function __construct(Level $level, $eid, $class, $type = 0, $data = array()){
 		$this->target = false;
 		$this->ai = new EntityAI($this);
-		$this->pathFinder = new TileNavigator(new MCBlockedProvider(), new MCDiagonalProvider(), new ManhattanHeuristic3D());
+		$this->pathFinder = new TileNavigator($this);
 		$this->pathFollower = new PathFollower($this);
 		parent::__construct($level, $eid, $class, $type, $data);
 		$this->canBeAttacked = true;
 		$this->hasGravity = true;
 		$this->hasKnockback = true;
+		
 		//if(self::$despawnMobs) $this->server->schedule(self::$despawnTimer, [$this, "close"]); //900*20
 	}
+	
+	public function isPickable(){
+		return !$this->dead;
+	}
+	
 	public function fall(){
 		$dmg = ceil($this->fallDistance - 3);
 		if($dmg > 0){
 			$this->harm($dmg, "fall");
 		}
+	}
+	
+	public function handlePlayerSearcher(Player $player, $dist){
+		
 	}
 	
 	public function getAIMoveSpeed(){
@@ -61,11 +74,17 @@ abstract class Living extends Entity implements Pathfindable{
 		unset($this->ai->mobController->entity);
 		unset($this->ai);
 		unset($this->parent);
+		unset($this->pathFinder->entity);
 	}
 	
 	public function canBeShot(){
 		return true;
 	}
+	
+	public function isPushable(){
+		return !$this->dead;
+	}
+	
 	public function collideHandler(){
 		$bb = $this->boundingBox->expand(0.2, 0, 0.2);
 		$minChunkX = ((int)($bb->minX)) >> 4;
@@ -78,8 +97,8 @@ abstract class Living extends Entity implements Pathfindable{
 			for($chunkZ = $minChunkZ; $chunkZ <= $maxChunkZ; ++$chunkZ){
 				$ind = "$chunkX $chunkZ";
 				foreach($this->level->entityListPositioned[$ind] ?? [] as $entid){
-					if($this->level->entityList[$entid] instanceof Entity){
-						if($bb->intersectsWith($this->level->entityList[$entid]->boundingBox)){
+					if(($this->level->entityList[$entid] ?? null) instanceof Entity){
+						if($this->level->entityList[$entid]->isPushable() && $bb->intersectsWith($this->level->entityList[$entid]->boundingBox)){
 							$this->level->entityList[$entid]->applyCollision($this);
 						}
 					}
@@ -103,21 +122,54 @@ abstract class Living extends Entity implements Pathfindable{
 		parent::update($now);
 	}
 	
+	public $pathEIDS = [];
+	private static $lastPathEID = 10000000;
+	public static $pathfind = true;
 	public function updateEntityMovement(){
-		if(!$this->dead && Entity::$allowedAI && $this->idleTime <= 0) {
+		if(!$this->dead && Entity::$allowedAI && $this->idleTime <= 0 && !self::$pathfinderTest) {
 			$this->ai->updateTasks();
 		}
-		//if($this->onGround){
-		//	if(!$this->hasPath() && $this->pathFinder instanceof ITileNavigator){
-		//		$this->path = $this->pathFinder->navigate(new PathTileXYZ($this->x, $this->y, $this->z, $this->level), new PathTileXYZ($this->x + mt_rand(-10, 10), $this->y + mt_rand(-1, 1), $this->z + mt_rand(-10, 10), $this->level), 10);
-		//	}
-		//	$this->pathFollower->followPath();
-		//}
+		if(self::$pathfinderTest){
+			if(!$this->hasPath()){
+				//$target = new PathTileXYZ($this->x + mt_rand(-10, 10), $this->y + mt_rand(-1, 1), $this->z + mt_rand(-10, 10), $this->level);
+				$pl = null;
+				if(count($this->level->players) > 0){
+					$pl = array_values($this->level->players)[0];
+					//$target = new PathTileXYZ($pl->entity->x, $pl->entity->y, $pl->entity->z, $this->level);
+				}
+				if(self::$pathfind){
+					$this->path = $this->pathFinder->navigate($this->level, (int)$this->x, (int)$this->y, (int)$this->z, (int)$pl->entity->x, (int)$pl->entity->y, (int)$pl->entity->z, 10);
+				}
+				
+				
+				if($this->path){
+					console("Found path of length ".count($this->path));
+					
+					foreach($this->path as $node){
+						$eid = self::$lastPathEID++;
+						$this->pathEIDS[] = $eid;
+						
+						$pk = new AddItemEntityPacket();
+						$pk->eid = $eid;
+						$pk->item = BlockAPI::getItem(GOLD_BLOCK, 0, 1);
+						$pk->x = ($node >> 16 & 0xff) + 0.5;
+						$pk->y = $node & 0xff;
+						$pk->z = ($node >> 8 & 0xff) + 0.5;
+						$pk->yaw = $pk->pitch = 0;
+						$pk->roll = 0;
+						foreach($this->level->players as $player){
+							$player->dataPacket($pk);
+						}
+					}
+				}
+			}
+			$this->pathFollower->followPath();
+		}
 		
 		
 		//not exactly here
 		if($this->jumping){
-			if(!$this->inWater){ //TODO also lava
+			if(!$this->inWater && !$this->inLava){
 				if($this->onGround && $this->jumpTicks <= 0){
 					$this->jump();
 					$this->jumpTicks = 10;
@@ -167,7 +219,7 @@ abstract class Living extends Entity implements Pathfindable{
 	public function moveEntityWithHeading($strafe, $forward){
 		if($this->inWater){ //also check is player, and can it fly or not
 			$prevPosY = $this->y;
-			$this->moveFlying($strafe, $forward, 0.04); //TODO speed: this.isAIEnabled() ? 0.04F : 0.02F
+			$this->moveFlying($strafe, $forward, 0.02);
 			$this->move($this->speedX, $this->speedY, $this->speedZ);
 			$this->speedX *= 0.8;
 			$this->speedY *= 0.8;
@@ -178,7 +230,7 @@ abstract class Living extends Entity implements Pathfindable{
 			if($this->isCollidedHorizontally && $this->isFree($this->speedX, $this->speedY + 0.6 - $this->y + $prevPosY, $this->speedZ)){
 				$this->speedY = 0.3;
 			}
-		}else if($this->inLava){
+		}elseif($this->inLava){
 			$prevPosY = $this->y;
 			$this->moveFlying($strafe, $forward, 0.02);
 			$this->move($this->speedX, $this->speedY, $this->speedZ);
@@ -200,26 +252,17 @@ abstract class Living extends Entity implements Pathfindable{
 				if($blockAt > 0) $friction = StaticBlock::getSlipperiness($blockAt) * 0.91;
 			}
 			
-			$var8 = 0.16277136 / ($friction*$friction*$friction);
+			$var8 = 0.16277 / ($friction*$friction*$friction);
 			
 			if($this->onGround){
-				//all mobs have ai enabled in nc for now
-				$var5 = $this->getAIMoveSpeed();
-				//TODO if AIEnabled
-				//{
-					//TODO $var5 = getAIMoveSpeed
-				//}
-				//else
-				//{
-				//	$var5 = $this->landMovementFactor;
-				//}
-				$var5 *= $var8;
+				$var5 = $this->getAIMoveSpeed();  //in vanilla it returns either this.seed or calls getBaseSpeed(depending on useNewAi)
+				$var5 *= $var8; //in vanilla it also multiplies by speedModifer
 			}else{
 				$var5 = $this->jumpMovementFactor;
 			}
 			
 			$this->moveFlying($strafe, $forward, $var5);
-			//1.5.2 recalculates friction, might be not neccessary
+			//recalculating friction, might be not neccessary
 			$friction = 0.91;
 			
 			if($this->onGround){
@@ -229,9 +272,17 @@ abstract class Living extends Entity implements Pathfindable{
 				if($blockAt > 0) $friction = StaticBlock::getSlipperiness($blockAt) * 0.91;
 			}
 			
-			//TODO onLadder
+			if($this->isOnLadder()){
+				$speedY = $this->speedY;
+				$this->fallDistance = 0;
+				if($speedY < -0.15) $this->speedY = -0.15;
+			}
+			
 			$this->move($this->speedX, $this->speedY, $this->speedZ);
-			//TODO onLadder + isCollidedHorizonatlly => speedY = 0.2
+			
+			if($this->isOnLadder() && $this->isCollidedHorizontally){
+				$this->speedY = 0.2;
+			}
 			
 			$this->speedY -= 0.08; //gravity
 			

@@ -82,7 +82,7 @@ class Level{
 		
 		return true;
 	}
-	/* TODO neccessary for projectiles
+	// TODO neccessary for projectiles
 	public function rayTraceBlocks(Vector3 $start, Vector3 $end){
 		
 		$par3 = false; //TODO move to params?
@@ -97,6 +97,7 @@ class Level{
 		
 		[$startID, $startMeta] = $this->level->getBlock($xStart, $yStart, $zStart);
 		$block = StaticBlock::getBlock($startID);
+
 		//$block::updateShape($this, $xStart, $yStart, $zStart); //TODO better way to do it
 		$aabb = $block::getAABB($this, $xStart, $yStart, $zStart);
 		if($startID > 0 && $aabb != null){ //TODO also block::canColideCheck
@@ -106,8 +107,7 @@ class Level{
 		
 		for($i = 0; $i <= 200; ++$i){
 			
-			if($xStart == $xEnd && $yStart == $yEnd && $zStart == $zEnd){ //also add checks for nan?
-				console("$start $end");
+			if(is_nan($start->x) || is_nan($start->y) || is_nan($start->z) || ($xStart == $xEnd && $yStart == $yEnd && $zStart == $zEnd)){ //also add checks for nan?
 				return null;
 			}
 			
@@ -115,15 +115,15 @@ class Level{
 			$v15 = $v17 = $v19 = 999.0; //nice mojang
 			
 			if($xEnd > $xStart) $v15 = $xStart + 1;
-			else if($xEnd < $xStart) $v15 = $xStart;
+			elseif($xEnd < $xStart) $v15 = $xStart;
 			else $v39 = false;
 			
 			if($yEnd > $yStart) $v17 = $yStart + 1;
-			else if($yEnd < $yStart) $v17 = $yStart;
+			elseif($yEnd < $yStart) $v17 = $yStart;
 			else $v40 = false;
 			
 			if($zEnd > $zStart) $v19 = $zStart + 1;
-			else if($zEnd < $zStart) $v19 = $zStart;
+			elseif($zEnd < $zStart) $v19 = $zStart;
 			else $v41 = false;
 			
 			$v21 = $v23 = $v25 = 999.0; //nice mojang x2
@@ -131,18 +131,17 @@ class Level{
 			$v29 = $end->y - $start->y;
 			$v31 = $end->z - $start->z;
 			
-			if($v39) $v21 = ($v15 - $start->x) / $v27;
-			if($v40) $v23 = ($v17 - $start->y) / $v29;
-			if($v41) $v25 = ($v19 - $start->z) / $v31;
+			if($v39) $v21 = $v27 == 0 ? ($v15 - $start->x)*INF : ($v15 - $start->x) / $v27;
+			if($v40) $v23 = $v29 == 0 ? ($v17 - $start->y)*INF : ($v17 - $start->y) / $v29;
+			if($v41) $v25 = $v31 == 0 ? ($v19 - $start->z)*INF : ($v19 - $start->z) / $v31;
 			
-			$v33 = false;
 			if($v21 < $v23 && $v21 < $v25){
 				$v42 = $xEnd > $xStart ? 4 : 5;
 				
 				$start->x = $v15;
 				$start->y += $v29 * $v21;
 				$start->z += $v31 * $v21;
-			}else if($v23 < $v25){
+			}elseif($v23 < $v25){
 				$v42 = $yEnd > $yStart ? 0 : 1;
 				
 				$start->x += $v27 * $v23;
@@ -151,8 +150,8 @@ class Level{
 			}else{
 				$v42 = $zEnd > $zStart ? 2 : 3;
 				
-				$start->x += $v27 * $v23;
-				$start->y += $v29 * $v21;
+				$start->x += $v27 * $v25;
+				$start->y += $v29 * $v25;
 				$start->z = $v19;
 			}
 			
@@ -167,9 +166,9 @@ class Level{
 			
 			[$blockID, $blockMeta] = $this->level->getBlock($xStart, $yStart, $zStart);
 			$block = StaticBlock::getBlock($blockID);
-			
+
 			$aabb = $block::getAABB($this, $xStart, $yStart, $zStart);
-			if($startID > 0 && $aabb != null){ //TODO also block::canColideCheck
+			if($blockID > 0 && $aabb != null){ //TODO also block::canColideCheck
 				$v38 = $block::clip($this, $xStart, $yStart, $zStart, $start, $end);
 				if($v38 != null) return $v38;
 			}
@@ -177,8 +176,7 @@ class Level{
 		
 		return null;
 	}
-	 */
-	//TODO mayPlace
+	 
 	public function isLavaInBB($aabb){
 		$minX = floor($aabb->minX);
 		$maxX = floor($aabb->maxX + 1);
@@ -212,7 +210,6 @@ class Level{
 		
 		$appliedVelocity = false;
 		$velocityVec = new Vector3(0, 0, 0);
-		
 		for($x = $minX; $x < $maxX; ++$x){
 			for($y = $minY; $y < $maxY; ++$y){
 				for($z = $minZ; $z < $maxZ; ++$z){
@@ -223,6 +220,7 @@ class Level{
 							$appliedVelocity = true;
 							Block::$class[$block]::addVelocityToEntity($this, $x, $y, $z, $entity, $velocityVec);
 						}
+						
 					}
 				}
 			}
@@ -259,6 +257,7 @@ class Level{
 					$bid = $this->level->getBlockID($x, $y, $z);
 					if($bid > 0){
 						$blockBounds = Block::$class[$bid]::getCollisionBoundingBoxes($this, $x, $y, $z, $e); //StaticBlock::getBoundingBoxForBlockCoords($b, $x, $y, $z);
+						
 						foreach($blockBounds as $blockBound){
 							if($aABB->intersectsWith($blockBound)) $aABBs[] = $blockBound;
 						}
@@ -461,18 +460,42 @@ class Level{
 	}
 	public function fastSetBlockUpdateMeta($x, $y, $z, $meta, $updateBlock = false){
 		$this->level->setBlockDamage($x, $y, $z, $meta);
-		$this->addBlockToSendQueue($x, $y, $z, $this->level->getBlockID($x, $y, $z), $meta);
+		$id = $this->level->getBlockID($x, $y, $z);
+		$this->addBlockToSendQueue($x, $y, $z, $id, $meta);
 		if($updateBlock){
-			$this->server->api->block->blockUpdateAround(new Position($x, $y, $z, $this), BLOCK_UPDATE_NORMAL, 1);
+			$this->updateNeighborsAt($x, $y, $z, $id);
 		}
 	}
 	
-	public function fastSetBlockUpdate($x, $y, $z, $id, $meta, $updateBlocksAround = false){
+	public function updateNeighborsAt($x, $y, $z, $oldID){
+		$block = $this->level->getBlockID($x - 1, $y, $z);
+		if($block) StaticBlock::getBlock($block)::neighborChanged($this, $x - 1, $y, $z, $x, $y, $z, $oldID);
+		$block = $this->level->getBlockID($x + 1, $y, $z);
+		if($block) StaticBlock::getBlock($block)::neighborChanged($this, $x + 1, $y, $z, $x, $y, $z, $oldID);
+		
+		$block = $this->level->getBlockID($x, $y - 1, $z);
+		if($block) StaticBlock::getBlock($block)::neighborChanged($this, $x, $y - 1, $z, $x, $y, $z, $oldID);
+		$block = $this->level->getBlockID($x, $y + 1, $z);
+		if($block) StaticBlock::getBlock($block)::neighborChanged($this, $x, $y + 1, $z, $x, $y, $z, $oldID);
+		
+		$block = $this->level->getBlockID($x, $y, $z - 1);
+		if($block) StaticBlock::getBlock($block)::neighborChanged($this, $x, $y, $z - 1, $x, $y, $z, $oldID);
+		$block = $this->level->getBlockID($x, $y, $z + 1);
+		if($block) StaticBlock::getBlock($block)::neighborChanged($this, $x, $y, $z + 1, $x, $y, $z, $oldID);
+	}
+	
+	public function fastSetBlockUpdate($x, $y, $z, $id, $meta, $updateBlocksAround = false, $tiles = false){
+		$oldID = $this->level->getBlockID($x, $y, $z);
+		
 		$this->level->setBlock($x, $y, $z, $id, $meta);
-		$this->addBlockToSendQueue($x, $y, $z, $id, $meta);
-		if($updateBlocksAround){
-			$this->server->api->block->blockUpdateAround(new Position($x, $y, $z, $this), BLOCK_UPDATE_NORMAL, 1);
+		
+		if($tiles){ //TODO rewrite
+			$this->server->api->tile->invalidateAll($this, $x, $y, $z);
 		}
+		if($updateBlocksAround){
+			self::updateNeighborsAt($x, $y, $z, $oldID);
+		}
+		$this->addBlockToSendQueue($x, $y, $z, $id, $meta);
 	}
 	
 	public function onTick(PocketMinecraftServer $server, $currentTime){
@@ -496,8 +519,15 @@ class Level{
 		}
 		$this->totalMobsAmount = 0;
 		$post = [];
-		//console($this->getName());
+		
 		foreach($this->entityList as $k => $e){
+			if(!($e instanceof Entity)){
+				unset($this->entityList[$k]);
+				unset($this->server->entities[$k]);
+				//TODO try to remove from $entityListPositioned?
+				continue;
+			}
+			
 			$dd = CORRECT_ENTITY_CLASSES[$e->class] ?? false;
 			if($dd === false || ($dd !== true && !isset($dd[$e->type]))){
 				ConsoleAPI::warn("Entity $k has invalid entity! {$e->class} {$e->type}");
@@ -514,13 +544,6 @@ class Level{
 					unset($this->entityListPositioned[$index][$k]);
 				}
 				
-				continue;
-			}
-			
-			if(!($e instanceof Entity)){
-				unset($this->entityList[$k]);
-				unset($this->server->entities[$k]);
-				//TODO try to remove from $entityListPositioned?
 				continue;
 			}
 			$curChunkX = (int)$e->x >> 4;
@@ -549,13 +572,25 @@ class Level{
 				}
 				if($e->level != $this && isset($this->entityListPositioned["$curChunkX $curChunkZ"])){
 					unset($this->entityListPositioned["$curChunkX $curChunkZ"][$e->eid]);
-				}else if($curChunkX != $newChunkX || $curChunkZ != $newChunkZ){
+				}elseif($curChunkX != $newChunkX || $curChunkZ != $newChunkZ){
 					$index = "$curChunkX $curChunkZ"; //while creating index like $curChunkX << 32 | $curChunkZ is faster, placing it inside list is slow
 					$newIndex = "$newChunkX $newChunkZ";
 					unset($this->entityListPositioned[$index][$e->eid]);
 					$this->entityListPositioned[$newIndex][$e->eid] = $e->eid; //set to e->eid to avoid possible memory leaks
 				}
-			}else if(isset($this->entityListPositioned["$curChunkX $curChunkZ"])){
+				
+				if($e->searchForClosestPlayers){
+					$e->handlePrePlayerSearcher();
+					
+					foreach($this->players as $player){
+						$dist = ($e->x - $player->entity->x)*($e->x - $player->entity->x) + ($e->y - $player->entity->y) + ($e->z - $player->entity->z);
+						$e->handlePlayerSearcher($player, $dist);
+					}
+				}
+				
+				
+				
+			}elseif(isset($this->entityListPositioned["$curChunkX $curChunkZ"])){
 				unset($this->entityListPositioned["$curChunkX $curChunkZ"][$k]);
 			}
 		}
@@ -623,7 +658,7 @@ class Level{
 				foreach($this->entityListPositioned[$ind] ?? [] as $ind2 => $entid){
 					if(isset($this->entityList[$entid]) && $this->entityList[$entid] instanceof Entity && $this->entityList[$entid]->class === $class && $this->entityList[$entid]->boundingBox->intersectsWith($bb)){
 						$ents[$entid] = $this->entityList[$entid];
-					}else if(!isset($this->entityList[$entid])){
+					}elseif(!isset($this->entityList[$entid])){
 						ConsoleAPI::debug("Removing entity from level array at index $ind/$ind2: $entid");
 						unset($this->entityListPositioned[$ind][$ind2]);
 					}
@@ -632,7 +667,10 @@ class Level{
 		}
 		return $ents;
 	}
-	
+	/**
+	 * @param AxisAlignedBB $bb
+	 * @return Entity[]
+	 */
 	public function getEntitiesInAABB(AxisAlignedBB $bb){
 		$minChunkX = ((int)($bb->minX)) >> 4;
 		$minChunkZ = ((int)($bb->minZ)) >> 4;
@@ -646,7 +684,7 @@ class Level{
 				foreach($this->entityListPositioned[$ind] ?? [] as $ind2 => $entid){
 					if(isset($this->entityList[$entid]) && $this->entityList[$entid] instanceof Entity && $this->entityList[$entid]->boundingBox->intersectsWith($bb)){
 						$ents[$entid] = $this->entityList[$entid];
-					}else if(!isset($this->entityList[$entid])){
+					}elseif(!isset($this->entityList[$entid])){
 						ConsoleAPI::debug("Removing entity from level array at index $ind/$ind2: $entid");
 						unset($this->entityListPositioned[$ind][$ind2]);
 					}
@@ -657,14 +695,16 @@ class Level{
 	}
 	
 	public function addBlockToSendQueue($x, $y, $z, $id, $meta){
-		if(!$this->forceDisableBlockQueue)
+		if(!$this->forceDisableBlockQueue){
 			$this->queuedBlockUpdates["$x $y $z"] = [$x, $y, $z, $id, $meta];
+		}
 	}
 	
 	public function setBlock(Vector3 $pos, Block $block, $update = true, $tiles = false, $direct = false){
 		if(!isset($this->level) or (($pos instanceof Position) and $pos->level !== $this) or $pos->x < 0 or $pos->y < 0 or $pos->z < 0){
 			return false;
 		}
+		$oldID = $this->level->getBlockID($pos->x, $pos->y, $pos->z);
 		$ret = $this->level->setBlock($pos->x, $pos->y, $pos->z, $block->getID(), $block->getMetadata());
 		if($ret === true){ 
 			if(!($pos instanceof Position)){
@@ -682,15 +722,15 @@ class Level{
 				$this->changedBlocks[$i][] = [$block->x, $block->y, $block->z, $block->id, $block->getMetadata()];
 				++$this->changedCount[$i];
 			}
-
-			if($update === true){
-				$this->server->api->block->blockUpdateAround($pos, BLOCK_UPDATE_NORMAL, 1);
-			}
+			
 			if($tiles === true){
-				if(($t = $this->server->api->tile->get($pos)) !== false){
-					$t->close();
-				}
+				$this->server->api->tile->invalidateAll($this, $pos->x, $pos->y, $pos->z);
 			}
+			
+			if($update === true){
+				$this->updateNeighborsAt($pos->x, $pos->y, $pos->z, $oldID);
+			}
+			
 		}
 		return $ret;
 	}

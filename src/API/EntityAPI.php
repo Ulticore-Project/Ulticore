@@ -226,7 +226,7 @@ class EntityAPI{
 				foreach($center->level->entityListPositioned[$ind] ?? [] as $ind2 => $entid){
 					if(isset($this->entities[$entid]) && $this->entities[$entid] instanceof Entity && ($class === false || $this->entities[$entid]->class == $class)){
 						$ents[$entid] = $this->entities[$entid];
-					}else if(!isset($this->entities[$entid])){
+					}elseif(!isset($this->entities[$entid])){
 						ConsoleAPI::debug("Removing entity from level array at index $ind/$ind2: $entid");
 						unset($center->level->entityListPositioned[$ind][$ind2]);
 					}
@@ -248,15 +248,15 @@ class EntityAPI{
 		$e->setHealth($e->getHealth() - $attack, $cause, $force);
 	}
 	
-	public function dropRawPos(Position $pos, $item, $speedX, $speedY, $speedZ){
+	public function dropRawPos(Level $level, $x, $y, $z, $item, $speedX, $speedY, $speedZ){
 		if($item->getID() === AIR or $item->count <= 0){
 			return;
 		}
 		$data = [
-			"x" => $pos->x,
-			"y" => $pos->y,
-			"z" => $pos->z,
-			"level" => $pos->level,
+			"x" => $x,
+			"y" => $y,
+			"z" => $z,
+			"level" => $level,
 			"speedX" => $speedX,
 			"speedY" => $speedY,
 			"speedZ" => $speedZ,
@@ -268,7 +268,7 @@ class EntityAPI{
 			for($count = $item->count; $count > 0;){
 				$item->count = min($item->getMaxStackSize(), $count);
 				$count -= $item->count;
-				$e = $this->add($pos->level, ENTITY_ITEM, ENTITY_ITEM_TYPE, $data);
+				$e = $this->add($level, ENTITY_ITEM, ENTITY_ITEM_TYPE, $data);
 				$this->spawnToAll($e);
 				$this->server->api->handle("entity.motion", $e);
 			}

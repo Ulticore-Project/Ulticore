@@ -20,6 +20,14 @@ class Painting extends Entity{
 		];
 	}
 	
+	public function isPickable(){
+		return true;
+	}
+	
+	public function survives(){
+		
+	}
+	
 	public function createSaveData(){
 		$data = parent::createSaveData();
 		

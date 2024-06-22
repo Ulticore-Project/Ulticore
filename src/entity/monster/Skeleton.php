@@ -8,15 +8,15 @@ class Skeleton extends Monster{
 		$this->setName("Skeleton");
 		$this->ai->removeTask("TaskAttackPlayer");
 		$this->setSpeed(0.25);
-		//$this->ai->addTask(new TaskDestroyServerPerformance());
 		
 		$this->ai->addTask(new TaskRandomWalk(1.0));
 		$this->ai->addTask(new TaskLookAround());
 		$this->ai->addTask(new TaskSwimming());
+		$this->ai->addTask(new TaskRangedAttack(1.0, 16));
 	}
 	
 	public function getAttackDamage(){
-		return 0; //TODO special attack
+		return 0;
 	}
 	
 	public function updateBurning(){
@@ -31,8 +31,11 @@ class Skeleton extends Monster{
 			}
 		}
 		if($block === AIR){
+			$oldFire = $this->fire;
 			$this->fire = 160; //Value from 0.8.1
-			$this->updateMetadata();
+			if(($oldFire > 0 && $this->fire <= 0) || ($oldFire <= 0 && $this->fire > 0)){
+				$this->updateMetadata(); //TODO rewrite metadata
+			}
 			return true;
 		}else{
 			return false;

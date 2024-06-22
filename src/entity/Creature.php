@@ -4,17 +4,37 @@ abstract class Creature extends Living{
 	const CLASS_TYPE = ENTITY_MOB;
 	
 	public $inPanic;
+	public $closestPlayerEID = false;
+	public $closestPlayerDist = INF;
+	
 	
 	public function __construct(Level $level, $eid, $class, $type = 0, $data = []){
 		$this->inPanic = false; //force for now
 		parent::__construct($level, $eid, $class, $type, $data);
 		$this->setHealth(isset($this->data["Health"]) ? $this->data["Health"] : 1, "generic");
 		$this->enableAutojump = true;
-		//$this->setName((isset($mobs[$this->type]) ? $mobs[$this->type]:$this->type));
-		//$this->ai->addTask(new TaskLookAround());
-		//$this->ai->addTask(new TaskRandomWalk());
-		//$this->ai->addTask(new TaskLookAtPlayer());
-		//$this->ai->addTask(new TaskSwimming());
+		$this->searchForClosestPlayers = true;
+	}
+	
+	public function update($now){
+		$this->handlePrePlayerSearcher();
+		return parent::update($now);
+	}
+	
+	public function handlePrePlayerSearcher(){
+		parent::handlePrePlayerSearcher();
+		if($this->closestPlayerEID !== false && !isset($this->level->entityList[$this->closestPlayerEID])){
+			$this->closestPlayerEID = false;
+			$this->closestPlayerDist = INF;
+		}
+	}
+	
+	public function handlePlayerSearcher(Player $player, $dist){
+		parent::handlePlayerSearcher($player, $dist);
+		if($this->closestPlayerDist >= $dist){
+			$this->closestPlayerEID = $player->entity->eid;
+			$this->closestPlayerDist = $dist;
+		}
 	}
 	
 	public function createSaveData(){
@@ -24,10 +44,10 @@ abstract class Creature extends Living{
 	}
 	
 	public function getSpeedModifer(){
-		return 0.7; //$this->speedModifer; //should be 0.7?
+		return 0.7;
 	}
 	public function getArmorValue(){
-		return 2;
+		return 0;
 	}
 	public function spawn($player){
 		if(!($player instanceof Player)){

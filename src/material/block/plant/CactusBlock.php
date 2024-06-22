@@ -6,7 +6,14 @@ class CactusBlock extends TransparentBlock{
 		$this->isFullBlock = false;
 		$this->hardness = 2;
 	}
-
+	
+	public static function onEntityCollidedWithBlock(Level $level, $x, $y, $z, Entity $entity){
+		$entity->harm(1, "cactus");
+	}
+	public static function getCollisionBoundingBoxes(Level $level, $x, $y, $z, Entity $entity){
+		return [new AxisAlignedBB($x + 0.0625, $y, $z + 0.0625, $x + 1 - 0.0625, $y + 1 - 0.0625, $z + 1 - 0.0625)];
+	}
+	
 	public static function onRandomTick(Level $level, $x, $y, $z){
 		//$b = $level->level->getBlock($x, $y - 1, $z);
 		$underID = $level->level->getBlockID($x, $y - 1, $z);
@@ -18,7 +25,7 @@ class CactusBlock extends TransparentBlock{
 				for($yy = 1; $yy < 3; ++$yy){
 					$bID = $level->level->getBlockID($x, $y + $yy, $z);
 					if($bID === AIR){
-						$level->setBlock(new Position($x, $y + $yy, $z, $level), new CactusBlock(), true, false, true);
+						$level->fastSetBlockUpdate($x, $y + $yy, $z, CACTUS, 0, true);
 						break;
 					}
 				}
@@ -31,20 +38,16 @@ class CactusBlock extends TransparentBlock{
 		}
 	}
 	
-	public function onUpdate($type){
-		if($type === BLOCK_UPDATE_NORMAL){
-			$down = $this->getSide(0);
-			$block0 = $this->getSide(2); 
-			$block1 = $this->getSide(3);
-			$block2 = $this->getSide(4);
-			$block3 = $this->getSide(5);
-			if($block0->isFlowable === false or $block1->isFlowable === false or $block2->isFlowable === false or $block3->isFlowable === false or ($down->getID() !== SAND and $down->getID() !== CACTUS)){ //Replace with common break method
-				$this->level->setBlock($this, new AirBlock(), true, false, true);
-				ServerAPI::request()->api->entity->drop(new Position($this->x + 0.5, $this->y, $this->z + 0.5, $this->level), BlockAPI::getItem($this->id));
-				return BLOCK_UPDATE_NORMAL;
-			}
+	public static function neighborChanged(Level $level, $x, $y, $z, $nX, $nY, $nZ, $oldID){
+		$down = $level->level->getBlockID($x, $y - 1, $z);
+		$b0 = $level->level->getBlockID($x, $y, $z - 1);
+		$b1 = $level->level->getBlockID($x, $y, $z + 1);
+		$b2 = $level->level->getBlockID($x - 1, $y, $z);
+		$b3 = $level->level->getBlockID($x + 1, $y, $z);
+		if(!StaticBlock::getIsFlowable($b0) || !StaticBlock::getIsFlowable($b1) || !StaticBlock::getIsFlowable($b2) || !StaticBlock::getIsFlowable($b3) || ($down !== SAND and $down !== CACTUS)){ //Replace with common break method
+			$level->fastSetBlockUpdate($x, $y, $z, 0, 0, true);
+			ServerAPI::request()->api->entity->drop(new Position($x + 0.5, $y, $z + 0.5, $level), BlockAPI::getItem(CACTUS));
 		}
-		return false;
 	}
 	
 	public function place(Item $item, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
