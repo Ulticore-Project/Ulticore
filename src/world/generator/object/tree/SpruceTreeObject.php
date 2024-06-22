@@ -12,7 +12,9 @@ class SpruceTreeObject extends TreeObject{
 	private $leavesMaxRadius = -1;
 
 	public function canPlaceObject(Level $level, Vector3 $pos, Random $random){
-		$this->findRandomLeavesSize($random);
+        $this->totalHeight += $random->nextRange(-1, 2);
+        $this->leavesBottomY = (int) ($this->totalHeight - $random->nextRange(1, 2) - 3);
+        $this->leavesMaxRadius = 1 + $random->nextRange(0, 1);
 		$checkRadius = 0;
 		for($yy = 0; $yy < $this->totalHeight + 2; ++$yy){
 			if($yy === $this->leavesBottomY){
@@ -29,15 +31,11 @@ class SpruceTreeObject extends TreeObject{
 		return true;
 	}
 
-	private function findRandomLeavesSize(Random $random){
-		$this->totalHeight += $random->nextRange(-1, 2);
-		$this->leavesBottomY = (int) ($this->totalHeight - $random->nextRange(1, 2) - 3);
-		$this->leavesMaxRadius = 1 + $random->nextRange(0, 1);
-	}
-
 	public function placeObject(Level $level, Vector3 $pos, Random $random){
 		if($this->leavesBottomY === -1 or $this->leavesMaxRadius === -1){
-			$this->findRandomLeavesSize();
+            $this->totalHeight += $random->nextRange(-1, 2);
+            $this->leavesBottomY = (int) ($this->totalHeight - $random->nextRange(1, 2) - 3);
+            $this->leavesMaxRadius = 1 + $random->nextRange(0, 1);
 		}
 		$level->setBlockRaw(new Vector3($pos->x, $pos->y - 1, $pos->z), new DirtBlock());
 		$leavesRadius = 0;

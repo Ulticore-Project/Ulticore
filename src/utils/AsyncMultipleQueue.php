@@ -67,12 +67,14 @@ class AsyncMultipleQueue extends Thread{
 }
 
 class Async extends Thread{
+    public $method;
+    public $params = [];
+    public $result = "";
+    public $joined = false;
 
 	public function __construct($method, $params = []){
 		$this->method = $method;
 		$this->params = $params;
-		$this->result = null;
-		$this->joined = false;
 	}
 
 	public static function call($method, $params = []){

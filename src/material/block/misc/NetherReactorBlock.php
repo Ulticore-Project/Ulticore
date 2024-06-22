@@ -35,7 +35,7 @@ class NetherReactorBlock extends SolidBlock{
 			return true;
 		}
 		//}
-		
+        return false;
 	}
 	
 	public function destroy(){

@@ -34,6 +34,7 @@ class UDPServer extends Worker{
 
     public function shutdown(){
         $this->shutdown = true;
+        return true;
     }
 
     public function pushMainToThreadPacket($buf, $source, $port) {

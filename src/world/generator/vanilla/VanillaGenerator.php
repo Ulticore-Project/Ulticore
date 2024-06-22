@@ -8,7 +8,7 @@ class VanillaGenerator implements LevelGenerator
 	 */
 	public $level;
 	/**
-	 * @var MersenneTwister
+	 * @var MTRandom
 	 */
 	private $rand;
 	/**

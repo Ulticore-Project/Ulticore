@@ -46,12 +46,6 @@ class GenericBlock extends Block{
 	public function onBreak(Item $item, Player $player){
 		return $this->level->setBlock($this, new AirBlock(), true, false, true);
 	}
-
-	/**
-	 * @param integer $type
-	 *
-	 * @return boolean
-	 */
 	public static function neighborChanged(Level $level, $x, $y, $z, $nX, $nY, $nZ, $oldID){
 		[$id, $meta] = $level->level->getBlock($x, $y, $z);
 		if(StaticBlock::getHasPhysics($id)){ //TODO move from here to different class

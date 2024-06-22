@@ -171,12 +171,6 @@ class PMFLevel extends PMF{
 		return true;
 	}
 
-	public function close(){
-		$chunks = null;
-		unset($chunks, $chunkChange, $locationTable);
-		parent::close();
-	}
-
 	public function unloadChunk($X, $Z, $save = true){
 		$X = (int) $X;
 		$Z = (int) $Z;
