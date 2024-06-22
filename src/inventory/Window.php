@@ -1,9 +1,9 @@
 <?php
 
-define("WINDOW_CHEST", 0);
-define("WINDOW_WORKBENCH", 1);
-define("WINDOW_FURNACE", 2);
-define("WINDOW_STONECUTTER", 3);
+const WINDOW_CHEST = 0;
+const WINDOW_WORKBENCH = 1;
+const WINDOW_FURNACE = 2;
+const WINDOW_STONECUTTER = 3;
 
 class Window{
 

@@ -1,7 +1,8 @@
 <?php
 
-define("BIG_ENDIAN", 0x00);
-define("LITTLE_ENDIAN", 0x01);
+const BIG_ENDIAN = 0x00;
+const LITTLE_ENDIAN = 0x01;
+//still use define
 define("ENDIANNESS", (pack("d", 1) === "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN : LITTLE_ENDIAN));
 
 class Utils{

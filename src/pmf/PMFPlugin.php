@@ -4,7 +4,7 @@
 require_once(FILE_PATH . "/src/pmf/PMF.php");
 /***REM_END***/
 
-define("PMF_CURRENT_PLUGIN_VERSION", 0x02);
+const PMF_CURRENT_PLUGIN_VERSION = 0x02;
 
 class PMFPlugin extends PMF{
 

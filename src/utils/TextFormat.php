@@ -1,28 +1,28 @@
 <?php
 
-define("FORMAT_BLACK", "§0");
-define("FORMAT_DARK_BLUE", "§1");
-define("FORMAT_DARK_GREEN", "§2");
-define("FORMAT_DARK_AQUA", "§3");
-define("FORMAT_DARK_RED", "§4");
-define("FORMAT_DARK_PURPLE", "§5");
-define("FORMAT_GOLD", "§6");
-define("FORMAT_GRAY", "§7");
-define("FORMAT_DARK_GRAY", "§8");
-define("FORMAT_BLUE", "§9");
-define("FORMAT_GREEN", "§a");
-define("FORMAT_AQUA", "§b");
-define("FORMAT_RED", "§c");
-define("FORMAT_LIGHT_PURPLE", "§d");
-define("FORMAT_YELLOW", "§e");
-define("FORMAT_WHITE", "§f");
+const FORMAT_BLACK = "§0";
+const FORMAT_DARK_BLUE = "§1";
+const FORMAT_DARK_GREEN = "§2";
+const FORMAT_DARK_AQUA = "§3";
+const FORMAT_DARK_RED = "§4";
+const FORMAT_DARK_PURPLE = "§5";
+const FORMAT_GOLD = "§6";
+const FORMAT_GRAY = "§7";
+const FORMAT_DARK_GRAY = "§8";
+const FORMAT_BLUE = "§9";
+const FORMAT_GREEN = "§a";
+const FORMAT_AQUA = "§b";
+const FORMAT_RED = "§c";
+const FORMAT_LIGHT_PURPLE = "§d";
+const FORMAT_YELLOW = "§e";
+const FORMAT_WHITE = "§f";
 
-define("FORMAT_OBFUSCATED", "§k");
-define("FORMAT_BOLD", "§l");
-define("FORMAT_STRIKETHROUGH", "§m");
-define("FORMAT_UNDERLINE", "§n");
-define("FORMAT_ITALIC", "§o");
-define("FORMAT_RESET", "§r");
+const FORMAT_OBFUSCATED = "§k";
+const FORMAT_BOLD = "§l";
+const FORMAT_STRIKETHROUGH = "§m";
+const FORMAT_UNDERLINE = "§n";
+const FORMAT_ITALIC = "§o";
+const FORMAT_RESET = "§r";
 
 class TextFormat{
     public static function tokenize($string){

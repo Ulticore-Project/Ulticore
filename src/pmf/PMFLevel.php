@@ -1,6 +1,6 @@
 <?php
 
-define("PMF_CURRENT_LEVEL_VERSION", 0x00);
+const PMF_CURRENT_LEVEL_VERSION = 0x00;
 
 class PMFLevel extends PMF{
 

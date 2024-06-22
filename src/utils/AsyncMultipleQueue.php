@@ -1,6 +1,6 @@
 <?php
 
-define("ASYNC_CURL_GET", 1);
+const ASYNC_CURL_GET = 1;
 define("ASYNC_CURL_POST", 2);
 
 class AsyncMultipleQueue extends Thread{

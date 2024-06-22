@@ -144,13 +144,16 @@ if(defined("POCKETMINE_COMPILE") and POCKETMINE_COMPILE === true){
 set_include_path(get_include_path() . PATH_SEPARATOR . FILE_PATH);
 
 ini_set("memory_limit", "256M"); //Default
-define("LOG", true);
+
+const LOG = true;
+
 define("START_TIME", microtime(true));
-define("MAJOR_VERSION", "1.0.0");
-define("CODENAME", "生存斧服务器"); //i'm not very creative - kotyaralih
-define("CURRENT_MINECRAFT_VERSION", "v0.8.1 alpha");
-define("CURRENT_API_VERSION", '12.1');
-define("CURRENT_PHP_VERSION", "8.0");
+
+const MAJOR_VERSION = "1.0.0";
+const CODENAME = "生存斧服务器"; //i'm not very creative - kotyaralih
+const CURRENT_MINECRAFT_VERSION = "v0.8.1 alpha";
+const CURRENT_API_VERSION = '12.1';
+const CURRENT_PHP_VERSION = "8.0";
 $gitsha1 = false;
 if(file_exists(FILE_PATH . ".git/refs/heads/master")){ //Found Git information!
 	define("GIT_COMMIT", strtolower(trim(file_get_contents(FILE_PATH . ".git/refs/heads/master"))));

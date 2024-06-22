@@ -1,6 +1,6 @@
 <?php
 
-define("PMF_CURRENT_VERSION", 0x01);
+const PMF_CURRENT_VERSION = 0x01;
 
 class PMF{
 

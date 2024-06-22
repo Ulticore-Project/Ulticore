@@ -1,13 +1,13 @@
 <?php
 
-define("CONFIG_DETECT", -1); //Detect by file extension
-define("CONFIG_PROPERTIES", 0); // .properties
-define("CONFIG_CNF", CONFIG_PROPERTIES); // .cnf
-define("CONFIG_JSON", 1); // .js, .json
-define("CONFIG_YAML", 2); // .yml, .yaml
+const CONFIG_DETECT = -1; //Detect by file extension
+const CONFIG_PROPERTIES = 0; // .properties
+const CONFIG_CNF = CONFIG_PROPERTIES; // .cnf
+const CONFIG_JSON = 1; // .js, .json
+const CONFIG_YAML = 2; // .yml, .yaml
 //define("CONFIG_EXPORT", 3); // .export, .xport
-define("CONFIG_SERIALIZED", 4); // .sl
-define("CONFIG_LIST", 5); // .txt, .list
+const CONFIG_SERIALIZED = 4; // .sl
+const CONFIG_LIST = 5; // .txt, .list
 
 /**
  * Class Config
