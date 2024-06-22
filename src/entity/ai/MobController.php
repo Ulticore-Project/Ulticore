@@ -64,10 +64,11 @@ class MobController
 		$this->speedMultiplier = $speed;
 		$this->updateMove = true;
 	}
-	
-	public function canJump(){
+
+    //TODO
+	/*public function canJump(){
 		return $this->isJumping() && $this->jumpTimeout <= 0 && $this->entity->onGround;
-	}
+	}*/
 	public static function limitAngle2($old, $newA, $limit){
 		$v4 = Utils::wrapAngleTo180($old - $newA);
 		

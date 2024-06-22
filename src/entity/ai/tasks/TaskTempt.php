@@ -2,9 +2,11 @@
 
 class TaskTempt extends TaskBase
 {
-	public function __construct($speed){
+    private $speedMultiplier;
+    private $targetDistance = 100; //10*10
+
+    public function __construct($speed){
 		$this->speedMultiplier = $speed;
-		$this->targetDistance = 10*10;
 	}
 	
 	public function onStart(EntityAI $ai)

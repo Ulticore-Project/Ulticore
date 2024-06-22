@@ -2,6 +2,9 @@
 
 class TaskRangedAttack extends \TaskBase
 {
+    public $speedMultiplier;
+    public $rangeSquared = 256;
+    public $ticksNoSeen = 0;
 	public $server;
 	public $attackCounter = 0;
 	public $seenTicks = 0;

@@ -65,7 +65,7 @@ class Entity extends Position
 	private $tickCounter;
 	private $speedMeasure = array(0, 0, 0, 0, 0, 0, 0);
 	public $server;
-	private $isStatic;
+	public $isStatic;
 	public $level;
 	public $isRiding = false;
 	public $lastUpdate;

@@ -20,9 +20,6 @@
 */
 
 class PacketReceiveEvent extends ServerEvent implements CancellableEvent{
-	public static $handlers;
-	public static $handlerPriority;
-	
 	private $packet;
 	
 	

@@ -6,16 +6,8 @@ abstract class BaseEvent{
 	const DENY = 1;
 	const NORMAL = 2;
 	const FORCE = 0x80000000;
-
-	/**
-	 * Any callable event must declare the static variables
-	 *
-	 * public static $handlers;
-	 * public static $handlerPriority;
-	 *
-	 * Not doing so will deny the proper event initialization
-	 */
-
+    public static $handlers;
+    public static $handlerPriority;
 	protected $eventName = null;
 	private $status = BaseEvent::NORMAL;
 	private $prioritySlot;

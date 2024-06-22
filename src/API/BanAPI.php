@@ -78,7 +78,7 @@ class BanAPI{
 						return false;
 					}
 				}
-				return;
+                return true;
 			case "player.block.place"://Spawn protection detection. Allows OPs to place/break blocks in the spawn area.
 				$player = $data["player"];
 				if(!$this->isOp($player->iusername) && $player->level->getName() === $this->server->api->level->getDefault()){
@@ -88,21 +88,22 @@ class BanAPI{
 						return false;
 					}
 				}
-				return;
+                return true;
 			case "console.command"://Checks if a command is allowed with the current user permissions.
 				if(isset($this->cmdWhitelist[$data["cmd"]])){
-					return;
+                    return true;
 				}
 
 				if($data["issuer"] instanceof Player){
 					if($this->server->api->handle("console.check", $data) === true or $this->isOp($data["issuer"]->iusername)){
-						return;
+                        return true;
 					}
 				}elseif($data["issuer"] === "console" or $data["issuer"] === "rcon"){
-					return;
+                    return true;
 				}
 				return false;
 		}
+        return false;
 	}
 
 	/**

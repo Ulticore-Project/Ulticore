@@ -9,7 +9,6 @@ class Creeper extends Monster{
 		parent::__construct($level, $eid, $class, $type, $data);
 		$this->setHealth(isset($this->data["Health"]) ? $this->data["Health"] : 16, "generic");
 		$this->setName("Creeper");
-		$this->ignited = 0;
 		$this->setSpeed(0.25);
 		$this->timeUntilExplode = $this->isIgnited() ? self::EXPL_TIME : 0;
 		
@@ -87,6 +86,7 @@ class Creeper extends Monster{
 		$explosion = new Explosion($this, 3);
 		$this->close();
 		$explosion->explode();
+        return true;
 	}
 	
 	public function getDrops(){

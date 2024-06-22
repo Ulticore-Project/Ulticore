@@ -302,6 +302,8 @@ class Player{
 		$pk->pitch = $pitch;
 		$pk->yaw = $yaw;
 		$this->dataPacket($pk);
+
+        return true;
 	}
 
 	/**

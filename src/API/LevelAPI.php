@@ -254,7 +254,7 @@ class LevelAPI{
 		return $this->server->spawn;
 	}
 
-	public function loadMap(){
+	/*public function loadMap(){ //@deprecated
 		if($this->mapName !== false and trim($this->mapName) !== ""){
 			if(!file_exists($this->mapDir . "level.pmf")){
 				$level = new LevelImport($this->mapDir);
@@ -266,7 +266,7 @@ class LevelAPI{
 			$this->seed = (int) $this->level->getData("seed");
 			$this->spawn = $this->level->getSpawn();
 		}
-	}
+	}*/
 
 	public function getAll(){
 		return $this->levels;

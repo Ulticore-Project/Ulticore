@@ -472,6 +472,7 @@ class PocketMinecraftServer{
 			case VIEW:
 				return "view";
 		}
+        return "UNKNOWN";
 	}
 
 	public function process()
