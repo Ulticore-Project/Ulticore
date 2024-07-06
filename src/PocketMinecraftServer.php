@@ -12,7 +12,7 @@ class PocketMinecraftServer{
 	
 	public $doTick, $levelData, $tiles, $entities, $schedule, $scheduleCnt, $whitelist, $spawn, $difficulty, $stop, $asyncThread;
     public $nextTick = 0;
-	public static $KEEP_CHUNKS_LOADED = true;
+	public static $KEEP_CHUNKS_LOADED = true, $PACKET_READING_LIMIT = 100;
 	
 	function __construct($name, $gamemode = SURVIVAL, $seed = false, $port = 19132, $serverip = "0.0.0.0"){
 		$this->port = (int) $port;
@@ -485,11 +485,17 @@ class PocketMinecraftServer{
         $this->nextTick = microtime(true);
         while($this->stop === false){
 
-            $packet = $this->interface->readPacket();
-            while($packet instanceof Packet){
-                $this->packetHandler($packet);
-                $packet = $this->interface->readPacket();
-            }
+            $packetcnt = 0;
+			$packet = $this->interface->readPacket();
+			while($packet = $this->interface->readPacket()){
+				if($packet instanceof Packet) {
+					$this->packetHandler($packet);
+					if(++$packetcnt > self::$PACKET_READING_LIMIT){
+						ConsoleAPI::warn("Reading more than ".self::$PACKET_READING_LIMIT." packets per tick! Forcing ticking!");
+						break;
+					}
+				}
+			}
 
             $this->tick();
 

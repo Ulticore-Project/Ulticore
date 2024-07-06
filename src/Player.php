@@ -71,12 +71,20 @@ class Player{
 	private $chunkCount = [];
 	private $received = [];
 	
+	public $slotCount = 7;
 	
 	public $entityMovementQueue;
 	public $entityMovementQueueLength = 0;
 	
 	public $blockUpdateQueue;
 	public $blockUpdateQueueLength = 0;
+	
+	/**
+	 * Sent by a client while it is linked to some entity.
+	 * @var boolean $isJumping
+	 * @var boolean $isSneaking
+	 */
+	public $isJumping, $isSneaking;
 	
 	/**
 	 * @param integer $clientID
@@ -738,12 +746,8 @@ class Player{
 		switch($event){
 			case "entity.link":
 				$pk = new SetEntityLinkPacket();
-				if($data["rider"] === $this->eid){
-					$pk->rider = 0;
-				}else{
-					$pk->rider = $data["rider"];
-				}
-				$pk->riding = $data["riding"];
+				$pk->rider = $data["rider"] == $this->entity->eid ? 0 : $data["rider"];
+				$pk->riding = $data["riding"] == $this->entity->eid ? 0 : $data["riding"];
 				$pk->type = 0;
 				$this->dataPacket($pk);
 				break;
@@ -907,34 +911,32 @@ class Player{
 	 * @return boolean
 	 */
 	public function addItem($type, $damage, $count, $send = true){
-		while($count > 0){
-			$add = 0;
-			foreach($this->inventory as $s => $item){
-				if($item->getID() === AIR){
-					$add = min($item->getMaxStackSize(), $count);
-					$this->inventory[$s] = BlockAPI::getItem($type, $damage, $add);
-					if($send === true){
-						$this->sendInventorySlot($s);
-					}
-					break;
-				}elseif($item->getID() === $type and $item->getMetadata() === $damage){
-					$add = min($item->getMaxStackSize() - $item->count, $count);
-					if($add <= 0){
-						continue;
-					}
-					$item->count += $add;
-					if($send === true){
-						$this->sendInventorySlot($s);
-					}
-					break;
+		
+		foreach($this->inventory as $s => $item){ //force check the inventory for non-full stacks of this item first
+			if($item->getID() === $type and $item->getMetadata() === $damage){
+				$add = min($item->getMaxStackSize() - $item->count, $count);
+				if($add <= 0){
+					continue;
 				}
+				$item->count += $add;
+				if($send) $this->sendInventorySlot($s);
+				
+				$count -= $add;
+				if($count <= 0) return true;
 			}
-			if($add <= 0){
-				return false;
-			}
-			$count -= $add;
 		}
-		return true;
+		
+		foreach($this->inventory as $s => $item){
+			if($item->getID() === AIR){
+				$add = min($item->getMaxStackSize(), $count);
+				$this->inventory[$s] = BlockAPI::getItem($type, $damage, $add);
+				if($send) $this->sendInventorySlot($s);
+				$count -= $add;
+				if($count <= 0) return true;
+			}
+		}
+		if($count <= 0) return true;
+		return false;
 	}
 
 	/**
@@ -1628,6 +1630,13 @@ class Player{
 					$this->slot = -1;//0
 					$this->hotbar = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 				}
+				
+				if($this->data->exists("slot-count")){
+					$this->slotCount = $this->data->get("slot-count");
+				}else{
+					$this->data->set("slot-count", $this->slotCount);
+				}
+				
 				$this->entity = $this->server->api->entity->add($this->level, ENTITY_PLAYER, 0, ["player" => $this]);
 				$this->eid = $this->entity->eid;
 				$this->server->query("UPDATE players SET EID = " . $this->eid . " WHERE CID = " . $this->CID . ";");
@@ -1796,8 +1805,17 @@ class Player{
 
 				if($this->server->handle("player.equipment.change", $data) !== false){
 					$this->slot = $packet->slot;
-					if(($this->gamemode & 0x01) === SURVIVAL){
-						if(!in_array($this->slot, $this->hotbar)){
+					if(($this->gamemode & 0x01) === SURVIVAL && count($this->hotbar) >= $this->slotCount){
+						
+						$has = false;
+						for($i = 0; $i < $this->slotCount; ++$i){
+							if($this->slot == $this->hotbar[$i]){
+								$has = true;
+								break;
+							}
+						}
+						
+						if(!$has){
 							array_pop($this->hotbar);
 							array_unshift($this->hotbar, $this->slot);
 						}
@@ -2157,33 +2175,15 @@ class Player{
 				}
 				switch($packet->event){
 					case 9: //Eating
-						$items = [ //TODO rewrite
-							APPLE => 4,
-							MUSHROOM_STEW => 10,
-							BEETROOT_SOUP => 10,
-							BREAD => 5,
-							RAW_PORKCHOP => 3,
-							COOKED_PORKCHOP => 8,
-							BEEF => 3,
-							STEAK => 8,
-							COOKED_CHICKEN => 6,
-							RAW_CHICKEN => 2,
-							MELON_SLICE => 2,
-							GOLDEN_APPLE => 10,
-							PUMPKIN_PIE => 8,
-							CARROT => 4,
-							POTATO => 1,
-							BAKED_POTATO => 6,
-							BEETROOT => 1
-						];
 						$slot = $this->getSlot($this->slot);
-						if($this->entity->getHealth() < 20 and isset($items[$slot->getID()])){
+						$foodHeal = Item::getFoodHeal($slot->getID());
+						if($this->entity->getHealth() < 20 && $foodHeal != 0){
 							$pk = new EntityEventPacket;
 							$pk->eid = 0;
 							$pk->event = 9;
 							$this->dataPacket($pk);
 
-							$this->entity->heal($items[$slot->getID()], "eating");
+							$this->entity->heal($foodHeal, "eating");
 							--$slot->count;
 							if($slot->count <= 0){
 								$this->setSlot($this->slot, BlockAPI::getItem(AIR, 0, 0), false);
@@ -2480,26 +2480,34 @@ class Player{
 				}
 				break;
 			case ProtocolInfo::PLAYER_INPUT_PACKET:
-				if(strlen(bin2hex($packet->buffer)) === 24 && $this->entity->linkedEntity instanceof Entity){
-					$this->entity->linkedEntity->linkEntity($this->entity->linkedEntity, SetEntityLinkPacket::TYPE_RIDE);
-					$this->entity->linkedEntity->linkedEntity = false;
-					$this->entity->linkedEntity = false;
+				$this->isJumping = $packet->isJumping;
+				$this->isSneaking = $packet->isSneaking;
+				$this->entity->moveForward = $packet->moveForward;
+				$this->entity->moveStrafing = $packet->moveStrafe;
+				
+				if(strlen(bin2hex($packet->buffer)) === 24 && $this->entity->linkedEntity != 0){
+					$this->entity->stopRiding();
+					break;
 				}
-				if($this->entity->linkedEntity instanceof Entity){
-					$pk = new SetEntityMotionPacket;
-					$pk->eid = $this->entity->linkedEntity->eid;
-					$pk->speedX = ($this->entity->x - $this->entity->linkedEntity->x)*1.2;
-					$pk->speedY = ($this->entity->y - $this->entity->linkedEntity->y)*1.2;
-					$pk->speedZ = ($this->entity->z - $this->entity->linkedEntity->z)*1.2;
+				if($this->entity->linkedEntity != 0){ //TODO better riding
+					$e = $this->entity->level->entityList[$this->entity->linkedEntity] ?? false;
+					if($e === false) {
+						ConsoleAPI::warn("Player is riding on entity that doesnt exist in world! ({$this->iusername}, {$this->entity->linkedEntity})");
+						$this->entity->stopRiding();
+						break;
+					}
+					/*$pk = new SetEntityMotionPacket;
+					$pk->eid = $e->eid;
+					$pk->speedX = ($this->entity->x - $e->x)*1.2;
+					$pk->speedY = ($this->entity->y - $e->y)*1.2;
+					$pk->speedZ = ($this->entity->z - $e->z)*1.2;
 					foreach($this->level->players as $p){
 						if($p->entity->eid != $this->entity->eid){
 							$p->dataPacket(clone $pk);
 						}
 					}
-					
-					$this->entity->linkedEntity->setPosition($this->entity);
-					$this->entity->linkedEntity->sendMoveUpdate();
-					//$this->entity->linkedEntity->moveFlying($packet->moveStrafe, $packet->moveForward, 1);
+					console("{$e} {$this->entity}");
+					//$this->entity->linkedEntity->moveFlying($packet->moveStrafe, $packet->moveForward, 1);*/
 				}
 				
 				break;
