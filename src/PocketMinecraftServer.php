@@ -487,14 +487,13 @@ class PocketMinecraftServer{
 
             $packetcnt = 0;
 			$packet = $this->interface->readPacket();
-			while($packet = $this->interface->readPacket()){
-				if($packet instanceof Packet) {
-					$this->packetHandler($packet);
-					if(++$packetcnt > self::$PACKET_READING_LIMIT){
-						ConsoleAPI::warn("Reading more than ".self::$PACKET_READING_LIMIT." packets per tick! Forcing ticking!");
-						break;
-					}
+			while($packet instanceof Packet){
+				$this->packetHandler($packet);
+				if(++$packetcnt > self::$PACKET_READING_LIMIT){
+					ConsoleAPI::warn("Reading more than ".self::$PACKET_READING_LIMIT." packets per tick! Forcing ticking!");
+					break;
 				}
+				$packet = $this->interface->readPacket();
 			}
 
             $this->tick();
