@@ -33,7 +33,6 @@ class FarmlandBlock extends TransparentBlock{
 			if($meta > 0){
 				--$meta;
 				$level->fastSetBlockUpdate($x, $y, $z, FARMLAND, $meta, true);
-				var_dump($meta);
 			}else{
 				$level->fastSetBlockUpdate($x, $y, $z, DIRT, 0, true);
 			}
