@@ -103,6 +103,20 @@ class ServerAPI{
 			}
 		}
 
+		console('
+          _____   _____    ______  __   __  ______
+        /  ___/  /  ___|  / ___  \ \ \ / / |  ____|
+        | |___  | |      | |___| |  \ / /  | |____
+        \___  \ | |      |  ___  |   / /   |  ____|
+         ___| | | |____  | |   | |  / / \  | |____
+        /_____/  \_____| |_|   |_| /_/ \_\ |______| - legacy
+      §eSCAXE-legacy§f is a custom version of §bNostalgiaCore§f.
+      §bVERSION: §6' . MAJOR_VERSION . ' (API ' . CURRENT_API_VERSION . ')
+      §fPHP: §e' . PHP_VERSION . " " . (PHP_INT_SIZE * 8) . 'bit
+      §cAuthor: Sunch233#3226
+      §aQQ Group: 655916398
+			');
+
 		console("[INFO] Starting Minecraft PE server version " . FORMAT_AQUA . CURRENT_MINECRAFT_VERSION);
 
 		console("[INFO] Loading properties...");
