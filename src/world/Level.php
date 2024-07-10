@@ -45,6 +45,8 @@ class Level{
 		ICE => true,
 		LEAVES => true
 	];
+
+	public static $randomTickSpeed = 20;
 	
 	public function __construct(PMFLevel $level, Config $entities, Config $tiles, Config $blockUpdates, $name){
 		$this->server = ServerAPI::request();
@@ -505,7 +507,7 @@ class Level{
 			for($cZ = 0; $cZ < 16; ++$cZ){
 				$index = $this->level->getIndex($cX, $cZ);
 				if(!isset($this->level->chunks[$index]) || $this->level->chunks[$index] === false) continue;
-				for($c = 0; $c <= 20; ++$c){
+				for($c = 0; $c <= self::$randomTickSpeed; ++$c){
 					$xyz = mt_rand(0, 0xffffffff) >> 2;
 					$x = $xyz & 0xf;
 					$z = ($xyz >> 8) & 0xf;
