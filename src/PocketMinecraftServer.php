@@ -595,8 +595,6 @@ class PocketMinecraftServer{
         if(($time - $this->nextTick) < 0){
             return;
         }
-
-        unset($this->tickMeasure[key($this->tickMeasure)]);
         ++$this->ticks;
 			
         foreach($this->clients as $client){
@@ -606,6 +604,7 @@ class PocketMinecraftServer{
             $l->onTick($this, $time);
         }
 
+		array_shift($this->tickMeasure);
         $this->tickMeasure[] = $this->lastTick = microtime(true);
         $this->tickerFunction($time);
 
