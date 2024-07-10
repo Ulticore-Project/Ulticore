@@ -177,6 +177,7 @@ class ConsoleAPI{
 			}
 			return $output;
 		}
+		return "";
 	}
 
 	public function defaultCommands($cmd, $params, $issuer, $alias){

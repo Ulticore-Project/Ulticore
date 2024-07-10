@@ -50,7 +50,7 @@ class FarmlandBlock extends TransparentBlock{
 			for ($by = $y; $by <= $y + 1; $by++) {
 				for ($bz = $z - 4; $bz <= $z + 4; $bz++) {
 					$id = $level->level->getBlockID($bx, $by, $bz);
-					if ($id === 8 || $id === 9) {
+					if ($id === WATER || $id === STILL_WATER) {
 						return true;
 					}
 				}
