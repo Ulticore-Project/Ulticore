@@ -228,7 +228,30 @@ class PluginAPI extends stdClass{
 
 		$className = $info["class"];
 		$apiversion = array_map("floatval", explode(",", (string) $info["apiversion"]));
-		if(!in_array((string) CURRENT_API_VERSION, $apiversion)){
+
+		$compatible = false;
+		foreach($apiversion as $version){
+			$version = array_map("intval", explode(".", $version));
+			$apiVersion = array_map("intval", explode(".", CURRENT_API_VERSION));
+			if(!isset($version[1])) $version[1] = 0; //12.0
+			//Completely different API version
+			if($version[0] > $apiVersion[0]){
+				continue;
+			}
+			//If the plugin uses new API
+			if($version[0] < $apiVersion[0]){
+				$compatible = true;
+				break;
+			}
+			//If the plugin requires new API features, being backwards compatible
+			if($version[1] > $apiVersion[1]){
+				continue;
+			}
+
+			$compatible = true;
+			break;
+		}
+		if(!$compatible){
 			console("[WARNING] Plugin \"" . $info["name"] . "\" may not be compatible with the API (" . $info["apiversion"] . " != " . CURRENT_API_VERSION . ")! It can crash or corrupt the server!");
 		}
 
