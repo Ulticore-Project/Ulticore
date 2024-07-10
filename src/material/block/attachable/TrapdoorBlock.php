@@ -14,7 +14,7 @@ class TrapdoorBlock extends TransparentBlock{
 	//TODO collision box
 	public function canAttachTo(Block $target){
 		$id = $target->getID();
-		return $id === SLAB || $id === GLOWSTONE || $id === SLAB || $id === WOOD_SLAB || (!$target->isTransparent || $target instanceof StairBlock);
+		return $id === GLOWSTONE || $id === SLAB || $id === WOOD_SLAB || (!$target->isTransparent || $target instanceof StairBlock);
 	}
 	
 	public static function isOpen($meta){

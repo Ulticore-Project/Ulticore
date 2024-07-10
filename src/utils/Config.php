@@ -109,7 +109,6 @@ class Config{
 					default:
 						$this->correct = false;
 						return false;
-						break;
 				}
 				if(!is_array($this->config)){
 					$this->config = $default;

@@ -327,7 +327,7 @@ class Level{
 
 		}
 
-		$this->level->setData("time", (int) $this->time);
+		$this->level->setData("time", $this->time);
 		$this->level->doSaveRound();
 		$this->level->saveData();
 		$this->nextSave = microtime(true) + 45;
@@ -543,7 +543,7 @@ class Level{
 				$curChunkZ = (int)$e->z >> 4;
 				$index = "$curChunkX $curChunkZ";
 				
-				if(isset($this->entityListPositioned[$index]) && isset($this->entityListPositioned[$index][$k])){
+				if(isset($this->entityListPositioned[$index][$k])){
 					unset($this->entityListPositioned[$index][$k]);
 				}
 				
@@ -884,7 +884,7 @@ class Level{
 	}
 
 	public function getTime(){
-		return (int) ($this->time);
+		return $this->time;
 	}
 
 	public function setTime($time){

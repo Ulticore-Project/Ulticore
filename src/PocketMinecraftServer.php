@@ -464,17 +464,13 @@ class PocketMinecraftServer{
 	 * @return string
 	 */
 	public function getGamemode(){
-		switch($this->gamemode){
-			case SURVIVAL:
-				return "survival";
-			case CREATIVE:
-				return "creative";
-			case ADVENTURE:
-				return "adventure";
-			case VIEW:
-				return "view";
-		}
-        return "UNKNOWN";
+		return match ($this->gamemode) {
+			SURVIVAL => "survival",
+			CREATIVE => "creative",
+			ADVENTURE => "adventure",
+			VIEW => "view",
+			default => "UNKNOWN",
+		};
 	}
 
 	public function process()
@@ -532,7 +528,7 @@ class PocketMinecraftServer{
 						$this->custom["times_" . $CID] = 0;
 					}
 					$ln = 15;
-					if($this->description == "" or substr($this->description, -1) != " "){
+					if($this->description == "" or !str_ends_with($this->description, " ")){
 						$this->description .= " ";
 					}
 					$txt = substr($this->description, $this->custom["times_" . $CID], $ln);
@@ -571,7 +567,6 @@ class PocketMinecraftServer{
 					$this->clients[$CID] = new Player($packet->clientID, $packet->ip, $packet->port, $packet->mtuSize); //New Session!
 					$pk = new RakNetPacket(RakNetInfo::OPEN_CONNECTION_REPLY_2);
 					$pk->serverID = $this->serverID;
-					$pk->port = $this->port;
 					$pk->mtuSize = $packet->mtuSize;
 					$pk->ip = $packet->ip;
 					$pk->port = $packet->port;
@@ -677,7 +672,7 @@ class PocketMinecraftServer{
 			E_DEPRECATED => "E_DEPRECATED",
 			E_USER_DEPRECATED => "E_USER_DEPRECATED",
 		];
-		$er["type"] = isset($errorConversion[$er["type"]]) ? $errorConversion[$er["type"]] : $er["type"];
+		$er["type"] = $errorConversion[$er["type"]] ?? $er["type"];
 		$dump .= "Error: " . var_export($er, true) . "\r\n\r\n";
 		if(stripos($er["file"], "plugin") !== false){
 			$dump .= "THIS ERROR WAS CAUSED BY A PLUGIN. REPORT IT TO THE PLUGIN DEVELOPER.\r\n";

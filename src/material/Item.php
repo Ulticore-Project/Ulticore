@@ -259,20 +259,14 @@ class Item{
 	
 	//TODO remove?
 	public function getPickaxeLevel(){ //Returns false or level of the pickaxe
-		switch($this->id){
-			case WOODEN_PICKAXE:
-				return 1;
-			case GOLDEN_PICKAXE:
-				return 2;
-			case STONE_PICKAXE:
-				return 3;
-			case IRON_PICKAXE:
-				return 4;
-			case DIAMOND_PICKAXE:
-				return 5;
-			default:
-				return false;
-		}
+        return match ($this->id) {
+            WOODEN_PICKAXE => 1,
+            GOLDEN_PICKAXE => 2,
+            STONE_PICKAXE => 3,
+            IRON_PICKAXE => 4,
+            DIAMOND_PICKAXE => 5,
+            default => false,
+        };
 	}
 	
 	public function isAxe(){
@@ -313,23 +307,14 @@ class Item{
 	
 	public static function getFoodHeal($id){
 		return match($id){
-			APPLE => 4,
-			MUSHROOM_STEW => 10,
-			BEETROOT_SOUP => 10,
+			APPLE, CARROT => 4,
+			MUSHROOM_STEW, GOLDEN_APPLE, BEETROOT_SOUP => 10,
 			BREAD => 5,
-			RAW_PORKCHOP => 3,
-			COOKED_PORKCHOP => 8,
-			BEEF => 3,
-			STEAK => 8,
-			COOKED_CHICKEN => 6,
-			RAW_CHICKEN => 2,
-			MELON_SLICE => 2,
-			GOLDEN_APPLE => 10,
-			PUMPKIN_PIE => 8,
-			CARROT => 4,
-			POTATO => 1,
-			BAKED_POTATO => 6,
-			BEETROOT => 1,
+			RAW_PORKCHOP, BEEF => 3,
+			COOKED_PORKCHOP, PUMPKIN_PIE, STEAK => 8,
+			COOKED_CHICKEN, BAKED_POTATO => 6,
+			RAW_CHICKEN, MELON_SLICE => 2,
+			POTATO, BEETROOT => 1,
 			
 			default => 0
 		};

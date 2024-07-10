@@ -14,7 +14,7 @@ if(!ini_get("date.timezone") and ($timezone = detect_system_timezone()) and date
      * an incorrect timezone abbreviation in php.ini apparently.
      */
     $timezone = ini_get("date.timezone");
-    if(strpos($timezone, "/") === false){
+    if(!str_contains($timezone, "/")){
         $default_timezone = timezone_name_from_abbr($timezone);
         ini_set("date.timezone", $default_timezone);
         date_default_timezone_set($default_timezone);
@@ -24,7 +24,7 @@ if(!ini_get("date.timezone") and ($timezone = detect_system_timezone()) and date
 }
 
 function detect_system_timezone(){
-    if(strpos(" " . strtoupper(php_uname("s")), " WIN") !== false){ //Windows
+    if(str_contains(" " . strtoupper(php_uname("s")), " WIN")){ //Windows
         $regex = '/(UTC)(\+*\-*\d*\d*\:*\d*\d*)/';
 
         /*
@@ -96,11 +96,11 @@ function detect_system_timezone(){
  */
 function parse_offset($offset){
     //Make signed offsets unsigned for date_parse
-    if(strpos($offset, '-') !== false){
+    if(str_contains($offset, '-')){
         $negative_offset = true;
         $offset = str_replace('-', '', $offset);
     }else{
-        if(strpos($offset, '+') !== false){
+        if(str_contains($offset, '+')){
             $negative_offset = false;
             $offset = str_replace('+', '', $offset);
         }else{

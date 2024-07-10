@@ -19,7 +19,7 @@ class OreObject{
 	}
 
 	public function placeObject(Level $level, Vector3 $pos){
-		$clusterSize = (int) $this->type->clusterSize;
+		$clusterSize = $this->type->clusterSize;
 		$angle = $this->random->nextFloat() * M_PI;
 		$offset = VectorMath::getDirection2D($angle)->multiply($clusterSize)->divide(8);
 		$x1 = $pos->x + 8 + $offset->x;

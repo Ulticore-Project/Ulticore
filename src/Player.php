@@ -409,11 +409,7 @@ class Player{
 	 * @return Item
 	 */
 	public function getSlot($slot){
-		if(isset($this->inventory[(int) $slot])){
-			return $this->inventory[(int) $slot];
-		}else{
-			return BlockAPI::getItem(AIR, 0, 0);
-		}
+		return $this->inventory[(int)$slot] ?? BlockAPI::getItem(AIR, 0, 0);
 	}
 
 	/**
@@ -723,11 +719,7 @@ class Player{
 	 * @return Item
 	 */
 	public function getArmor($slot){
-		if(isset($this->armor[(int) $slot])){
-			return $this->armor[(int) $slot];
-		}else{
-			return BlockAPI::getItem(AIR, 0, 0);
-		}
+		return $this->armor[(int)$slot] ?? BlockAPI::getItem(AIR, 0, 0);
 	}
 
 	public function setArmor($slot, Item $armor, $send = true){
@@ -778,7 +770,7 @@ class Player{
 						if($w === $data["tile"]){
 							$pk = new ContainerSetSlotPacket;
 							$pk->windowid = $id;
-							$pk->slot = $data["slot"] + (isset($data["offset"]) ? $data["offset"] : 0);
+							$pk->slot = $data["slot"] + ($data["offset"] ?? 0);
 							$pk->item = $data["slotdata"];
 							$this->dataPacket($pk);
 						}
@@ -1670,7 +1662,7 @@ class Player{
 				$this->server->schedule(50, [$this, "measureLag"], [], true);
 				
 				$pk = new SetTimePacket;
-				$pk->time = (int) $this->level->getTime();
+				$pk->time = $this->level->getTime();
 				$pk->started = !$this->level->isTimeStopped();
 				$this->dataPacket($pk);
 				
@@ -1689,7 +1681,7 @@ class Player{
 						
 						$pos = new Position($this->entity->x, $this->entity->y, $this->entity->z, $this->level);
 						$pData = $this->data->get("position");
-						$this->teleport($pos, isset($pData["yaw"]) ? $pData["yaw"] : false, isset($pData["pitch"]) ? $pData["pitch"] : false, true, true);
+						$this->teleport($pos, $pData["yaw"] ?? false, $pData["pitch"] ?? false, true, true);
 						$this->entity->setHealth($this->data->get("health"), "spawn", true);
 						$this->spawned = true;
 						$this->server->api->player->spawnAllPlayers($this);
@@ -1700,7 +1692,7 @@ class Player{
 						//$this->server->schedule(5, [$this->entity, "update"], [], true);
 						//$this->server->schedule(2, [$this->entity, "updateMovement"], [], true);
 						$this->sendArmor();
-						$array = explode("@n", (string)$this->server->motd);
+						$array = explode("@n", $this->server->motd);
 						foreach($array as $msg){
 							$this->sendChat($msg."\n");
 						}

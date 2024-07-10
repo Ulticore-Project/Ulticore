@@ -1,7 +1,7 @@
 <?php
 
 const ASYNC_CURL_GET = 1;
-define("ASYNC_CURL_POST", 2);
+const ASYNC_CURL_POST = 2;
 
 class AsyncMultipleQueue extends Thread{
 
@@ -61,7 +61,7 @@ class AsyncMultipleQueue extends Thread{
 				++$offset;
 			}
 		}
-		$this->input = (string) substr($this->input, $offset);
+		$this->input = substr($this->input, $offset);
 		return $str;
 	}
 }
