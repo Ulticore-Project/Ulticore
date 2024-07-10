@@ -160,11 +160,14 @@ class ConsoleAPI{
 			if(count($params) === 1 and $params[0] === ""){
 				$params = [];
 			}
-			if(!in_array(strtolower($cmd), array_keys($this->cmds))){
-				$output = "Command doesn't exist! Use /help\n";
-			}elseif(($d2 = $this->server->api->dhandle("console.command", ["cmd" => $cmd, "parameters" => $params, "issuer" => $issuer, "alias" => $alias])) === false){
-				$output = "You don't have permissions to use this command.\n";
-			}elseif($d2 === true){
+			if(($d1 = $this->server->api->dhandle("console.command." . $cmd, ["cmd" => $cmd, "parameters" => $params, "issuer" => $issuer, "alias" => $alias])) === false
+				or ($d2 = $this->server->api->dhandle("console.command", ["cmd" => $cmd, "parameters" => $params, "issuer" => $issuer, "alias" => $alias])) === false){
+				if(in_array(strtolower($cmd), array_keys($this->cmds))){
+					$output = "You don't have permissions to use this command.\n";
+				}else{
+					$output = "Command doesn't exist! Use /help\n";
+				}
+			}elseif($d1 !== true and (!isset($d2) or $d2 !== true)){
 				if(isset($this->cmds[$cmd]) and is_callable($this->cmds[$cmd])){
 					$output = @call_user_func($this->cmds[$cmd], $cmd, $params, $issuer, $alias);
 				}elseif($this->server->api->dhandle("console.command.unknown", ["cmd" => $cmd, "params" => $params, "issuer" => $issuer, "alias" => $alias]) !== false){
