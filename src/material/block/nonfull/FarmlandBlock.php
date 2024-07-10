@@ -29,19 +29,17 @@ class FarmlandBlock extends TransparentBlock{
 	
 	public static function onRandomTick(Level $level, $x, $y, $z){
 		$meta = $level->level->getBlockDamage($x, $y, $z);
-		$b = $level->level->getBlockID($x, $y + 1, $z);
-		if(!StaticBlock::getIsFlowable($b)){
-			$level->fastSetBlockUpdate($x, $y, $z, DIRT, 0, true);
-		}elseif($meta === 0 && mt_rand(0, 5) === 0){
-			$water = self::checkWaterStatic($level, $x, $y, $z);
-			if($water){
-				$level->fastSetBlockUpdate($x, $y, $z, FARMLAND, 1, true);
-			}elseif($b != 0 && StaticBlock::getIsTransparent($b)){
+		if(!self::checkWaterStatic($level, $x, $y, $z)){
+			if($meta > 0){
+				--$meta;
+				$level->fastSetBlockUpdate($x, $y, $z, FARMLAND, $meta, true);
+				var_dump($meta);
+			}else{
 				$level->fastSetBlockUpdate($x, $y, $z, DIRT, 0, true);
 			}
+		}elseif($meta < 7){
+			$level->fastSetBlockUpdate($x, $y, $z, FARMLAND, 7, true);
 		}
-		
-		
 	}
 
 	public static function checkWaterStatic(Level $level, $x, $y, $z)
@@ -56,6 +54,7 @@ class FarmlandBlock extends TransparentBlock{
 				}
 			}
 		}
+		return false;
 	}
 	
 	public static function neighborChanged(Level $level, $x, $y, $z, $nX, $nY, $nZ, $oldID){
