@@ -835,7 +835,7 @@ class Entity extends Position
 		
 		$this->counterUpdate();
 		
-		if($this->isPlayer() || $update){
+		if($this->isPlayer() || $hasUpdate){
 			$this->updateMovement();
 		}
 		
