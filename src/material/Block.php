@@ -133,6 +133,8 @@ abstract class Block extends Position{
 			INFO_UPDATE2 => "InfoUpdate2Block",
 			RESERVED6 => "Reserved6Block",
 	);
+
+	public static $blockID;
 	public $id;
 	public $meta;
 	public $name;
