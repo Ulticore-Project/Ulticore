@@ -287,6 +287,7 @@ class Player{
 			$this->lastCorrect = $pos;
 			$this->entity->fallY = false;
 			$this->entity->fallStart = false;
+			$this->entity->notOnGroundTicks = 0;
 			$this->entity->setPosition($pos, $yaw, $pitch);
 			$this->entity->resetSpeed();
 			$this->entity->updateLast();
@@ -300,7 +301,14 @@ class Player{
 				$this->forceMovement = $pos;
 			}
 		}
-
+		
+		$pk = new SetEntityMotionPacket();
+		$pk->eid = 0;
+		$pk->speedX = 0;
+		$pk->speedY = 0;
+		$pk->speedZ = 0;
+		$this->dataPacket($pk);
+		
 		$pk = new MovePlayerPacket;
 		$pk->eid = 0;
 		$pk->x = $pos->x;
@@ -460,7 +468,9 @@ class Player{
 			$this->server->api->dhandle("player.armor", $data);
 		}
 	}
-
+	public $lastOrderX = 0;
+	public $lastOrderZ = 0;
+	
 	public function orderChunks(){
 		if(!($this->entity instanceof Entity) or $this->connected === false){
 			return false;
@@ -469,6 +479,8 @@ class Player{
 		$X = ((int)$this->entity->x) >> 4;
 		$Z = ((int)$this->entity->z) >> 4;
 		$this->chunksOrder = [];
+		$this->lastOrderX = $X;
+		$this->lastOrderZ = $Z;
 		if(self::$smallChunks){
 			$Y = ((int)$this->entity->y) >> 4;
 			$v = new Vector3($X, $Y, $Z);
@@ -621,10 +633,12 @@ class Player{
             foreach($cnt as $i => $count){
                 $this->chunkCount[$count] = true;
             }
-
-            $this->lastChunk = [$x, $z];
         }
-
+		$this->lastChunk = [$x, $z];
+		if($this->lastOrderX != ($this->entity->x >> 4) || $this->lastOrderZ != ($this->entity->z >> 4)){
+			$this->orderChunks();
+		}
+		
 		$this->server->schedule(1, [$this, "getNextChunk"], $world);
 	}
 
