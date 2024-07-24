@@ -416,11 +416,11 @@ class Entity extends Position
 			foreach($this->server->api->entity->getRadius($this, 2, false) as $item){
 				if($item->class === ENTITY_ITEM && !$item->closed && $item->spawntime > 0 && $item->delayBeforePickup <= 0){
 					if($item->boundingBox->intersectsWith($myBB)){ 
-						if((($this->player->gamemode & 0x01) === 1 || $this->player->hasSpace($item->type, $item->meta, $item->stack) === true) && $this->server->api->dhandle("player.pickup", array(
+						if((($this->player->gamemode & 0x01) === 1 || $this->player->hasSpace($item->itemID, $item->meta, $item->stack) === true) && $this->server->api->dhandle("player.pickup", array(
 							"eid" => $this->player->eid,
 							"player" => $this->player,
 							"entity" => $item,
-							"block" => $item->type,
+							"block" => $item->itemID,
 							"meta" => $item->meta,
 							"target" => $item->eid
 						)) !== false){
@@ -791,6 +791,10 @@ class Entity extends Position
 								}
 							}
 							
+							if($id == WATER  || $id === STILL_WATER || $id === COBWEB || $id == LAVA  || $id === STILL_LAVA){
+								$this->notOnGroundTicks = 0;
+							}
+							
 							intersects:
 							if($y <= floor($this->boundingBox->minY) && !$this->onGround){
 								if($intersects > 0) $this->onGround = count($bounds) > 0;
@@ -810,8 +814,7 @@ class Entity extends Position
 						}
 					}
 				}
-				
-				if($prevGroundState == $this->onGround && !$this->onGround){
+				if($prevGroundState == $this->onGround && !$this->onGround && $this->player->isSleeping == false){ //isSleeping may be a vector
 					++$this->notOnGroundTicks;
 				}else if($this->onGround){
 					$this->notOnGroundTicks = 0;
@@ -828,6 +831,7 @@ class Entity extends Position
 				
 				if($this->isOnLadder()){
 					$this->fallDistance = 0;
+					$this->notOnGroundTicks = 0;
 					$this->fallStart = $this->y;
 				}
 				

@@ -63,7 +63,7 @@ class Player{
 	private $bandwidthStats = [0, 0, 0];
 	private $lag = [];
 	private $lagStat = 0;
-	private $spawnPosition;
+	public $spawnPosition;
 	private $packetLoss = 0;
 	private $lastChunk = false;
 	private $bigCnt;
@@ -647,7 +647,7 @@ class Player{
 	 */
 	public function setSpawn(Vector3 $pos){
 		if(!($pos instanceof Position)){
-			$level = $this->level;
+			$level = $this->entity->level;
 		}else{
 			$level = $pos->level;
 		}
@@ -712,6 +712,7 @@ class Player{
 					break;
 				}elseif($item->getID() === $type and $item->getMetadata() === $damage){
 					$add = min($item->getMaxStackSize() - $item->count, $count);
+					
 					if($add <= 0){
 						continue;
 					}
@@ -1009,7 +1010,45 @@ class Player{
 				return "view";
 		}
 	}
-
+	
+	public function checkSpawnPosition(){
+		if($this->server->api->dhandle("player.checkspawnpos", ["player" => $this]) === false) return;
+		$level = $this->spawnPosition->level;
+		if(!isset($this->server->api->level->levels[$level->getName()])){
+			ConsoleAPI::warn("Level to respawn {$this->iusername} was unloaded, changing spawnpoint to default.");
+			$level = $this->server->api->level->getDefault();
+			$this->spawnPosition = $level->getSpawn();
+		}else{
+			$x0 = floor($this->spawnPosition->x - $this->entity->width/2);
+			$x1 = floor($this->spawnPosition->x + $this->entity->width/2 + 1);
+			$y0 = floor($this->spawnPosition->y);
+			$y1 = floor($this->spawnPosition->y + $this->entity->height + 1);
+			$z0 = floor($this->spawnPosition->z - $this->entity->width/2);
+			$z1 = floor($this->spawnPosition->z + $this->entity->width/2 + 1);
+			
+			for($x = $x0; $x < $x1; ++$x) {
+				for($z = $z0; $z < $z1; ++$z) {
+					for($y = $y0; $y < $y1; ++$y) {
+						$bid = $this->entity->level->level->getBlockID($x, $y, $z);
+						if($bid > 0 && StaticBlock::getIsSolid($bid)){
+							$blockBounds = StaticBlock::$prealloc[$bid]::getCollisionBoundingBoxes($this->entity->level, $x, $y, $z, $this->entity);
+							
+							foreach($blockBounds as $blockBound){
+								if($this->entity->boundingBox->intersectsWith($blockBound)){
+									$this->sendChat("Your spawn positon is obstructed.");
+									goto reset_spawn_pos;
+								}
+							}
+						}
+					}
+				}
+			}
+			return;
+			reset_spawn_pos:
+			$this->spawnPosition = $this->server->api->level->getDefault()->getSpawn();
+		}
+	}
+	
 	public function setGamemode($gm){
 		if($gm < 0 or $gm > 3 or $this->gamemode === $gm){
 			return false;
@@ -1482,6 +1521,8 @@ class Player{
 		if(EventHandler::callEvent(new DataPacketReceiveEvent($this, $packet)) === BaseEvent::DENY){
 			return;
 		}
+
+		
 		
 		switch($packet->pid()){
 			case 0x01:
@@ -2137,6 +2178,8 @@ class Player{
 				}
 				$this->craftingItems = [];
 				$this->toCraft = [];
+				
+				$this->checkSpawnPosition();
 				$this->teleport($this->spawnPosition, false, false, true, false);
 				
 				$pk = new MovePlayerPacket();
@@ -2206,7 +2249,26 @@ class Player{
 					break;
 				}
 				$packet->eid = $this->eid;
+				$prevItem = $packet->item;
 				$packet->item = $this->getSlot($this->slot);
+				$sendOnDrop = false;
+				
+				if($prevItem->getID() != $packet->item->getID() || $prevItem->getMetadata() != $packet->item->getMetadata()){
+					if(count($this->inventory) >= 36){
+						foreach($this->inventory as $slot => $item){
+							if($item->getID() == 0) goto inv_desync_on_drop;
+						}
+						
+						$this->toCraft[] = $prevItem; //vanilla drops only result?
+						$this->lastCraft = microtime(true);
+						break;
+					}else{
+						inv_desync_on_drop:
+						ConsoleAPI::debug("Inventory desync on drop({$this->iusername})");
+						$sendOnDrop = true;
+					}
+				}
+				
 				$this->craftingItems = [];
 				$this->toCraft = [];
 				$data["eid"] = $packet->eid;
@@ -2225,7 +2287,9 @@ class Player{
 					$sY += ($this->entity->random->nextFloat() - $this->entity->random->nextFloat()) * 0.1;
 					$sZ += sin($f3) * $f1;
 					$this->server->api->entity->dropRawPos($this->level, $this->entity->x, $this->entity->y - 0.3 + $this->entity->height - 0.12, $this->entity->z, $packet->item, $sX, $sY, $sZ);
-					$this->setSlot($this->slot, BlockAPI::getItem(AIR, 0, 0), false);
+					$this->setSlot($this->slot, BlockAPI::getItem(AIR, 0, 0), $sendOnDrop);
+				}else{
+					$this->sendInventory(); //send if blocked
 				}
 				if($this->entity->inAction === true){
 					$this->entity->inAction = false;
@@ -2634,9 +2698,24 @@ class Player{
 				$s = $this->getSlot($slot);
 				if($s->count <= 0 or $s->getID() === AIR){
 					$this->setSlot($slot, BlockAPI::getItem($item->getID(), $item->getMetadata(), $item->count), false);
-				}else{
+				}else if($s->getID() == $item->getID() && $s->getMetadata() == $item->getMetadata() && ($s->count + $item->count) <= $s->maxStackSize){
 					$this->setSlot($slot, BlockAPI::getItem($item->getID(), $item->getMetadata(), $s->count + $item->count), false);
+				}else{
+					$f1 = 0.3;
+					$sX = -sin(($this->entity->yaw / 180) * M_PI) * cos(($this->entity->pitch / 180) * M_PI) * $f1;
+					$sZ = cos(($this->entity->yaw / 180) * M_PI) * cos(($this->entity->pitch / 180) * M_PI) * $f1;
+					$sY = -sin(($this->entity->pitch / 180) * M_PI) * $f1 + 0.1;
+					$f1 = 0.02;
+					$f3 = $this->entity->random->nextFloat() * M_PI * 2.0;
+					$f1 *= $this->entity->random->nextFloat();
+					$sX += cos($f3) * $f1;
+					$sY += ($this->entity->random->nextFloat() - $this->entity->random->nextFloat()) * 0.1;
+					$sZ += sin($f3) * $f1;
+					$this->server->api->entity->dropRawPos($this->level, $this->entity->x, $this->entity->y - 0.3 + $this->entity->height - 0.12, $this->entity->z, $item, $sX, $sY, $sZ);
 				}
+				
+				$this->sendInventory(); //force send on crafting
+				
 				switch($item->getID()){
 					case WORKBENCH:
 						AchievementAPI::grantAchievement($this, "buildWorkBench");

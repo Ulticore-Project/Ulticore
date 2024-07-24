@@ -67,7 +67,7 @@ class Level{
 		$this->changedBlocks = [];
 		$this->changedCount = [];
 		$this->mobSpawner = new MobSpawner($this);
-		$this->randInt1 = 0x283AE83; //it is static in 0.1, and i dont care is it in 0.8
+		$this->randInt1 = 0x283AE83;
 		$this->randInt2 = 0x3C6EF35F;
 	}
 
@@ -273,7 +273,7 @@ class Level{
 	
 	public function __destruct(){
 		if(isset($this->level)){
-			$this->save(false, false);
+			$this->save(false, false, false, false);
 			$this->level->close();
 			unset($this->level);
 		}
@@ -287,7 +287,7 @@ class Level{
 		$t = $this->getTime() % 19200;
 		return $t < TimeAPI::$phases["sunrise"] && $t > TimeAPI::$phases["sunset"];
 	}
-	public function save($force = false, $extra = true){
+	public function save($force = false, $entities = true, $tiles = true, $blockupdates = true){
 		if(!isset($this->level)){
 			return false;
 		}
@@ -295,7 +295,7 @@ class Level{
 			return;
 		}
 
-		if($extra !== false){
+		if($entities){
 			$entities = [];
 			
 			foreach($this->entityList as $entity){
@@ -305,13 +305,16 @@ class Level{
 			}
 			$this->entities->setAll($entities);
 			$this->entities->save();
+		}
+		if($tiles){
 			$tiles = [];
 			foreach($this->server->api->tile->getAll($this) as $tile){
 				$tiles[] = $tile->data;
 			}
 			$this->tiles->setAll($tiles);
 			$this->tiles->save();
-
+		}
+		if($blockupdates){
 			$blockUpdates = [];
 			$updates = $this->server->query("SELECT x,y,z,type,delay FROM blockUpdates WHERE level = '" . $this->getName() . "';");
 			if($updates !== false and $updates !== true){
@@ -324,7 +327,6 @@ class Level{
 
 			$this->blockUpdates->setAll($blockUpdates);
 			$this->blockUpdates->save();
-
 		}
 
 		$this->level->setData("time", $this->time);
@@ -397,6 +399,7 @@ class Level{
 		if(count($this->changedCount) > 0){
 			arsort($this->changedCount);
 			$resendChunks = [];
+			$reorder = false;
 			foreach($this->changedCount as $index => $count){
 				if($count < 582){//Optimal value, calculated using the relation between minichunks and single packets
 					break;
@@ -404,10 +407,17 @@ class Level{
 				foreach($this->players as $p){
 					unset($p->chunksLoaded[$index]);
 				}
+				$reorder = true;
 				unset($this->changedBlocks[$index]);
 			}
 			$this->changedCount = [];
-
+			
+			if($reorder){
+				foreach($this->players as $p){
+					$p->orderChunks();
+				}
+			}
+			
 			if(count($this->changedBlocks) > 0){
 				foreach($this->changedBlocks as $i => $blocks){
 					foreach($blocks as $b){
@@ -424,9 +434,9 @@ class Level{
 				$this->changedBlocks = [];
 			}
 		}
-
+		
 		if($this->nextSave < $now){
-			$this->save(false, false);
+			$this->save(false, true, true, true);
 		}
 	}
 
