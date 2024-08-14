@@ -1,6 +1,6 @@
 <?php
 
-class FarmlandBlock extends TransparentBlock{
+class FarmlandBlock extends SolidBlock{
 	public static $blockID;
 	public function __construct($meta = 0){
 		parent::__construct(FARMLAND, $meta, "Farmland");
