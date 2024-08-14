@@ -328,6 +328,7 @@ class ConsoleLoop extends Thread{
 
 	private function readLine(){
 		if($this->fp){
+			$write = $except = null;
 			do{
 				if($this->stop){
 					ConsoleAPI::notice("Force stopping console thread!");
