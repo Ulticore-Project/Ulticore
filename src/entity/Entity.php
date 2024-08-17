@@ -383,7 +383,7 @@ class Entity extends Position
 	 * @return boolean
 	 */
 	public function isPickable(){
-		return $this->isPlayer() ? !$this->dead : false;
+		return $this->isPlayer() && !$this->dead;
 	}
 	
 	public function handleLavaMovement(){ //TODO maybe try merging with water?
@@ -1499,7 +1499,6 @@ class Entity extends Position
 	{
 		if($this->class === ENTITY_PLAYER){
 			$this->player->teleport(new Vector3($this->x, $this->y, $this->z), false, false, true, false);
-			return;
 		}
 	}
 

@@ -37,10 +37,6 @@ class Chicken extends Animal{
 	
 	public function fall(){} //chickens have no fall dmg?
 	
-	public function update($now){
-		parent::update($now);
-	}
-	
 	public function dropAnEgg(){
 		if($this->closed){
 			return;
