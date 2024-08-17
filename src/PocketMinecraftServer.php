@@ -253,10 +253,7 @@ class PocketMinecraftServer{
 		$type = (int) $type;
 		switch($type){
 			case ASYNC_CURL_GET:
-				if(isset($data["headers"])){
-					$jsstr = json_encode($data["headers"]);
-				}
-				$d .= Utils::writeShort(strlen($data["url"])) . $data["url"] . (isset($data["timeout"]) ? Utils::writeShort($data["timeout"]) : Utils::writeShort(10)) . (isset($data["headers"]) ? Utils::writeShort(strlen($jsstr)) . $jsstr : Utils::writeShort(1) . " ");
+				$d .= Utils::writeShort(strlen($data["url"])) . $data["url"] . (isset($data["timeout"]) ? Utils::writeShort($data["timeout"]) : Utils::writeShort(10)) . (isset($data["headers"]) ? Utils::writeShort(strlen(json_encode($data["headers"]))) . json_encode($data["headers"]) : Utils::writeShort(1) . " ");
 				break;
 			case ASYNC_CURL_POST:
 				$d .= Utils::writeShort(strlen($data["url"])) . $data["url"] . (isset($data["timeout"]) ? Utils::writeShort($data["timeout"]) : Utils::writeShort(10));

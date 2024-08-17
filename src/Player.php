@@ -572,7 +572,7 @@ class Player{
 		foreach($this->chunkCount as $count => $t){
 			if(isset($this->recoveryQueue[$count]) or isset($this->resendQueue[$count])){
 				$this->server->schedule(1, [$this, "getNextChunk"], $world);
-				return;
+				return false;
 			}else{
 				unset($this->chunkCount[$count]);
 			}
@@ -633,13 +633,14 @@ class Player{
             foreach($cnt as $i => $count){
                 $this->chunkCount[$count] = true;
             }
+            $this->lastChunk = [$x, $z];
         }
-		$this->lastChunk = [$x, $z];
 		if($this->lastOrderX != ($this->entity->x >> 4) || $this->lastOrderZ != ($this->entity->z >> 4)){
 			$this->orderChunks();
 		}
 		
 		$this->server->schedule(1, [$this, "getNextChunk"], $world);
+        return true;
 	}
 
 	/**

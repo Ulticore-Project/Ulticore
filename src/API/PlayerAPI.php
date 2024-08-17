@@ -12,7 +12,7 @@ class PlayerAPI{
 		$this->server->addHandler("player.death", [$this, "handle"], 1);
 		$this->registerCmd("list");
 		$this->registerCmd("kill", "<player>");
-		$this->registerCmd("gamemode", "<mode> [player]", [$this, "commandHandler"]);
+		$this->registerCmd("gamemode", "<mode> [player]");
 		$this->registerCmd("tp", "[target player] <destination player|w:world> OR /tp [target player] <x> <y> <z>");
 		$this->registerCmd("spawnpoint", "[player] [x] [y] [z]");
 		$this->registerCmd("spawn");
@@ -55,7 +55,9 @@ class PlayerAPI{
 						}else{
 							$message = " was killed by {$e->name}";
 						}
-					}
+					}else{
+                        return false;
+                    }
 				}else{
 					$message = match ($data["cause"]) {
 						"cactus" => " was pricked to death",
@@ -73,6 +75,7 @@ class PlayerAPI{
 				$this->server->api->chat->broadcast($data["player"]->username . $message);
 				return true;
 		}
+        return false;
 	}
 
 	public function commandHandler($cmd, $args, $issuer, $alias){
