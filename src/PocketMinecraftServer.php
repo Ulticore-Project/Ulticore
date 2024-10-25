@@ -98,8 +98,10 @@ class PocketMinecraftServer{
 				"max-chunks-per-tick" => 4,
                 "view-distance" => 8,
 				"random-tick-speed" => 20,
-			]
+			],
+			"use-experimental-hotbar" => Player::$experimentalHotbar
 		]);
+		Player::$experimentalHotbar = $this->extraprops->get("use-experimental-hotbar");
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
         Player::$maxChunksPerTick = $this->extraprops->getNested("Scaxe-Legacy.max-chunks-per-tick", 4);
         Player::$viewDistance = $this->extraprops->getNested("Scaxe-Legacy.view-distance", 8);
@@ -626,7 +628,8 @@ class PocketMinecraftServer{
 					try{
 						$return = @call_user_func($this->schedule[$cid][0] ?? function(){}, $this->schedule[$cid][1], $this->schedule[$cid][2]); //somehow args can be null
 					}catch(TypeError $e){
-						ConsoleAPI::error($e->getTraceAsString());
+						$m = $e->getMessage()."\nStack trace:\n".$e->getTraceAsString();
+						ConsoleAPI::error($m);
 						$return = false;
 					}
 				}else{

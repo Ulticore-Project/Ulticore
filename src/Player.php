@@ -2,8 +2,8 @@
 
 
 class Player{
-	
-	public static $smallChunks = false;
+
+	public static $smallChunks = false, $experimentalHotbar = true;
     public static $maxChunksPerTick = 4;
     public static $viewDistance = 8;
 	/** @var Config */
@@ -17,6 +17,7 @@ class Player{
 	public $inventory;
 	public $slot;
 	public $hotbar;
+	public $curHotbarIndex = 0;
 	public $armor = [];
 	public $loggedIn = false;
 	public $gamemode;
@@ -108,7 +109,7 @@ class Player{
 		$this->gamemode = $this->server->gamemode;
 		$this->level = $this->server->api->level->getDefault();
 		$this->slot = 0;
-		$this->hotbar = [0, -1, -1, -1, -1, -1, -1, -1, -1];
+		$this->hotbar = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 		$this->packetStats = [0, 0];
 		
 		$this->buffer = new RakNetPacket(RakNetInfo::DATA_PACKET_0);
@@ -167,7 +168,12 @@ class Player{
 		$this->setSpawn($spawnPoint);
 		return true;
 	}
-
+	
+	public function setSlotCount($cnt){
+		$this->slotCount = $cnt;
+		$this->data->set("slot-count", $this->slotCount);
+	}
+	
 	/**
 	 * @param Vector3 $pos
 	 * @param float|boolean $yaw
@@ -200,15 +206,24 @@ class Player{
 				foreach($this->level->entityList as $e){
 					if($e->eid !== $this->entity->eid){
 						if($e->isPlayer()){
-							$pk = new MoveEntityPacket_PosRot();
+							$pk = new MovePlayerPacket();
 							$pk->eid = $this->entity->eid;
 							$pk->x = -256;
 							$pk->y = 128;
 							$pk->z = -256;
 							$pk->yaw = 0;
 							$pk->pitch = 0;
+							$pk->bodyYaw = 0;
 							$e->player->dataPacket($pk);
+							
+							$pk = new MovePlayerPacket();
 							$pk->eid = $e->eid;
+							$pk->x = -256;
+							$pk->y = 128;
+							$pk->z = -256;
+							$pk->yaw = 0;
+							$pk->pitch = 0;
+							$pk->bodyYaw = 0;
 							$this->dataPacket($pk);
 							
 						}else{
@@ -282,9 +297,13 @@ class Player{
 						$player->sendArmor($this);
 					}
 				}
+				
+				$resyncpos = new Position($pos->x, $pos->y, $pos->z, $pos->level);
+			}else{
+				$resyncpos = new Vector3($pos->x, $pos->y, $pos->z);
 			}
-
-			$this->lastCorrect = $pos;
+			
+			$this->lastCorrect = $resyncpos;
 			$this->entity->fallY = false;
 			$this->entity->fallStart = false;
 			$this->entity->notOnGroundTicks = 0;
@@ -298,7 +317,7 @@ class Player{
 			}
 			$this->entity->check = true;
 			if($force === true){
-				$this->forceMovement = $pos;
+				$this->forceMovement = $resyncpos;
 			}
 		}
 		
@@ -1675,8 +1694,8 @@ class Player{
 					$this->hotbar = $this->data->get("hotbar");
 					$this->slot = $this->hotbar[0];
 				}else{
-					$this->slot = -1;//0
-					$this->hotbar = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+					$this->slot = 0;
+					$this->hotbar = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 				}
 				
 				if($this->data->exists("slot-count")){
@@ -1852,21 +1871,38 @@ class Player{
 				$data["slot"] = $packet->slot;
 
 				if($this->server->handle("player.equipment.change", $data) !== false){
-					$this->slot = $packet->slot;
-					if(($this->gamemode & 0x01) === SURVIVAL && count($this->hotbar) >= $this->slotCount){
-						
+					if(!Player::$experimentalHotbar) $this->slot = $packet->slot;
+					if(($this->gamemode & 0x01) === SURVIVAL){
 						$has = false;
+						$slotPos = 0;
+						$packetSlotPos = 0;
 						for($i = 0; $i < $this->slotCount; ++$i){
-							if($this->slot == $this->hotbar[$i]){
+							if($this->slot == $this->hotbar[$i]) $slotPos = $i;
+							if($packet->slot == $this->hotbar[$i]){
+								$packetSlotPos = $i;
 								$has = true;
 								break;
 							}
 						}
 						
-						if(!$has){
-							array_pop($this->hotbar);
-							array_unshift($this->hotbar, $this->slot);
+						if(Player::$experimentalHotbar && $has) {
+							$this->slot = $packet->slot;
+							$this->curHotbarIndex = $packetSlotPos;
 						}
+						if(!$has){
+							if(Player::$experimentalHotbar) {
+								$this->slot = $packet->slot;
+								$this->hotbar[$this->curHotbarIndex] = $packet->slot;
+							}
+							else{
+								$this->curHotbarIndex = 0;
+								array_pop($this->hotbar);
+								array_unshift($this->hotbar, $this->slot);
+							}
+						}
+						if(Player::$experimentalHotbar) $this->sendInventory();
+					}else{
+						$this->slot = $packet->slot;
 					}
 				}else{
 					//$this->sendInventorySlot($packet->slot);
@@ -1997,7 +2033,9 @@ class Player{
 								$e = $this->server->api->entity->add($this->level, ENTITY_OBJECT, OBJECT_SNOWBALL, $data);
 							}
 							
-							$this->removeItem($slotItem->getID(), $slotItem->meta, 1);
+							if(($this->gamemode & 0x01) == 0x0) {
+								$this->removeItem($slotItem->getID(), $slotItem->meta, 1);
+							}
 							
 							$this->server->api->entity->spawnToAll($e);
 						}
