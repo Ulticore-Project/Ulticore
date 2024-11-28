@@ -100,6 +100,7 @@ class PocketMinecraftServer{
 			"keep-chunks-loaded" => self::$KEEP_CHUNKS_LOADED,
 			"force-20-tps" => false,
 			"use-experimental-hotbar" => Player::$experimentalHotbar,
+			"keep-items-on-death" => Entity::$keepInventory,
 			
 			"Ulticore" =>[
 				"max-chunks-per-tick" => 4,
@@ -111,7 +112,6 @@ class PocketMinecraftServer{
 
 			],
 		]);
-
 		Player::$experimentalHotbar = $this->extraprops->get("use-experimental-hotbar");
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
         Player::$maxChunksPerTick = $this->extraprops->getNested("Ulticore.max-chunks-per-tick", 4);
