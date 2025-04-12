@@ -347,16 +347,17 @@ class PMFLevel extends PMF{
 	}
 	
 	public function getBlockID($x, $y, $z){
+		if($y > 127 || $y < 0){
+			return 0;
+		}
+		
 		if($x < 0 || $x > 255 || $z < 0 || $z > 255){
 			return INVISIBLE_BEDROCK;
 		}
 		
-		if($y > 127 || $y < 0){
-			return 0;
-		}
-		$X = (int) $x >> 4; // Update casting to php 8.1
-		$Z = (int) $z >> 4;
-		$Y = (int) $y >> 4;
+		$X = $x >> 4;
+		$Z = $z >> 4;
+		$Y = $y >> 4;
 		$index = self::getIndex($X, $Z);
 		if(!isset($this->chunks[$index]) || $this->chunks[$index] === false || ($this->chunks[$index][$Y] === false)){
 			return 0;
@@ -454,11 +455,11 @@ class PMFLevel extends PMF{
 	}
 
 	public function getBlock($x, $y, $z){
-		if($x < 0 || $x > 255 || $z < 0 || $z > 255){
-			return [INVISIBLE_BEDROCK, 0];
-		}
 		if($y < 0 || $y > 127){
 			return [AIR, 0];
+		}
+		if($x < 0 || $x > 255 || $z < 0 || $z > 255){
+			return [INVISIBLE_BEDROCK, 0];
 		}
 		
 		$X = (int) $x >> 4;
