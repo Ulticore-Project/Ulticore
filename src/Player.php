@@ -2380,8 +2380,7 @@ class Player{
 							if($item->getID() == 0) goto inv_desync_on_drop;
 						}
 						
-						$this->toCraft[] = $prevItem; //vanilla drops only result?
-						$this->lastCraft = microtime(true);
+						$this->addCraftingResult(-1, $prevItem->getID(), $prevItem->getMetadata(), $prevItem->count);
 						break;
 					}else{
 						inv_desync_on_drop:
@@ -2763,21 +2762,15 @@ class Player{
 		}
 
 		
-		$cc = CraftingRecipes::canCraft($results, $ingridients, $this->craftingType);
-		if(!is_array($cc)){
-			if(!$cc){
-				$this->toCraft = [];
-				$this->craftingItems = [];
-				return false;
+		$cc = CraftingRecipes::canCraft($toCraft, $ingridients, $this->craftingType);
+		if(!is_array($cc) && $this->craftingType == CraftingRecipes::TYPE_CRAFTIGTABLE){
+			$cc = CraftingRecipes::canCraft($toCraft, $ingridients, CraftingRecipes::TYPE_INVENTORY);
+			if(!is_array($cc)){
+				return; //recipe not found
 			}
-			return;
 		}
 		
-		if($this->server->api->dhandle("player.craft", ["player" => $this, "ingridients" => $this->craftingItems, "results" => $this->toCraft, "type" => $this->craftingType]) === false){
-			$this->toCraft = [];
-			$this->craftingItems = [];
-			return false;
-		}
+		console("success");
 		
 		foreach($this->craftingItems as $i => $slotz){
 			$id = $i >> 16;
@@ -2792,25 +2785,13 @@ class Player{
 				}
 			}
 		}
-
-		if(is_array($res)){
-			if($this->server->api->dhandle("player.craft", ["player" => $this, "recipe" => $recipe, "craft" => $craft, "type" => $type]) === false){
-				return false;
-			}
-			foreach($recipe as $slot => $item){
-				$s = $this->getSlot($slot);
-				$s->count -= $item->count;
-				if($s->count <= 0){
-					$this->setSlot($slot, BlockAPI::getItem(AIR, 0, 0), false);
-				}
-			}
-			foreach($craft as $slot => $item){
-				$s = $this->getSlot($slot);
-				if($s->count <= 0 or $s->getID() === AIR){
-					$this->setSlot($slot, BlockAPI::getItem($item->getID(), $item->getMetadata(), $item->count), false);
-				}else if($s->getID() == $item->getID() && $s->getMetadata() == $item->getMetadata() && ($s->count + $item->count) <= $s->maxStackSize){
-					$this->setSlot($slot, BlockAPI::getItem($item->getID(), $item->getMetadata(), $s->count + $item->count), false);
-				}else{
+		
+		foreach($this->toCraft as $i => $slotz){
+			$id = $i >> 8;
+			$meta = $i & 0xff;
+			foreach($slotz as $slot => $count){
+				if($slot < 0){ //drop item
+					$item = BlockAPI::getItem($id, $meta, $count);
 					$f1 = 0.3;
 					$sX = -sin(($this->entity->yaw / 180) * M_PI) * cos(($this->entity->pitch / 180) * M_PI) * $f1;
 					$sZ = cos(($this->entity->yaw / 180) * M_PI) * cos(($this->entity->pitch / 180) * M_PI) * $f1;
