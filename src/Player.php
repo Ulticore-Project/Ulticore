@@ -14,6 +14,10 @@ class Player{
 	public $CID;
 	public $MTU;
 	public $spawned = false;
+	/**
+	 * Stores player inventory. Should not be accessed directly: use Player::addItem/Player::removeItem/Player::setSlot for setting and Player::getSlot for getting.
+	 * @var array
+	 */
 	public $inventory;
 	public $slot;
 	public $hotbar;
@@ -87,6 +91,18 @@ class Player{
 	 * @var boolean $isSneaking
 	 */
 	public $isJumping, $isSneaking;
+
+	/**
+	 * should server send inventory to a client or not. Should not be changed directly: use Player::sendInventory() to change to true.
+	 * @var boolean
+	 */
+	public $sendingInventoryRequired = false;
+	
+	public $expectedSetSlotPackets = [];
+	public $expectedSetSlotIndex = -1;
+	public $lastExpectedSetSlotIndexReceived = -1;
+	
+	private $lastPing = -1;
 	
 	/**
 	 * @param integer $clientID
@@ -128,14 +144,34 @@ class Player{
 		$this->evid[] = $this->server->event("server.close", [$this, "close"]);
 		console("[DEBUG] New Session started with " . $ip . ":" . $port . ". MTU " . $this->MTU . ", Client ID " . $this->clientID, true, true, 2);
 	}
-
+	
 	public function __get($name){
 		if(isset($this->{$name})){
 			return ($this->{$name});
 		}
 		return null;
 	}
-
+	
+	public function addExpectedSetSlotPacket(int $slot, int $id, int $meta, int $count){
+		$this->expectedSetSlotPackets[++$this->expectedSetSlotIndex]["$slot $id $meta $count"] = $this->server->ticks;
+	}
+	
+	public function isExpectedSetSlot(int $slot, Item $item){
+		$index = "$slot {$item->getID()} {$item->getMetadata()} {$item->count}";
+		foreach($this->expectedSetSlotPackets as $i => $stuff){
+			$a = key($stuff);
+			
+			if($index == $a){
+				return $i;
+			}
+		}
+		return false;
+	}
+	
+	public function removeExpectedSetSlot(int $index){
+		unset($this->expectedSetSlotPackets[$index]);
+	}
+	
 	public function getSpawn(){
 		return $this->spawnPosition;
 	}
@@ -251,7 +287,6 @@ class Player{
 				$this->level->players[$this->CID] = $this;
 				$this->chunksLoaded = [];
 				$this->server->api->entity->spawnToAll($this->entity);
-				//$this->server->api->entity->spawnAll($this);
 				foreach($this->level->entityList as $e){
 					if($e->eid !== $this->entity->eid){
 						if(!$e->isPlayer()){
@@ -442,7 +477,7 @@ class Player{
 	public function getSlot($slot){
 		return $this->inventory[(int)$slot] ?? BlockAPI::getItem(AIR, 0, 0);
 	}
-
+	
 	/**
 	 * @param integer $slot
 	 * @param Item $item
@@ -451,10 +486,19 @@ class Player{
 	 * @return boolean
 	 */
 	public function setSlot($slot, Item $item, $send = true){
-		$this->inventory[(int) $slot] = $item;
+		$slot = (int) $slot;
+		$old = $this->getSlot($slot);
+		
+		$this->inventory[$slot] = $item;
+		
 		if($send === true){
-			$this->sendInventorySlot((int) $slot);
+			$this->sendInventorySlot($slot);
 		}
+		
+		//if($old->getID() != $item->getID() || $old->getMetadata() != $item->getMetadata() || $old->count != $item->count){
+			$this->addExpectedSetSlotPacket($slot, $item->getID(), $item->getMetadata(), $item->count);
+		//}
+		
 		return true;
 	}
 
@@ -685,39 +729,13 @@ class Player{
 
 	public function sendInventorySlot($s){
 		$this->sendInventory();
-		return;
-		$s = (int) $s;
-		if(!isset($this->inventory[$s])){
-			$pk = new ContainerSetSlotPacket;
-			$pk->windowid = 0;
-			$pk->slot = (int) $s;
-			$pk->item = BlockAPI::getItem(AIR, 0, 0);
-			$this->dataPacket($pk);
-		}
-
-		$slot = $this->inventory[$s];
-		$pk = new ContainerSetSlotPacket;
-		$pk->windowid = 0;
-		$pk->slot = (int) $s;
-		$pk->item = $slot;
-		$this->dataPacket($pk);
 		return true;
 	}
 
 	public function sendInventory(){
-		if(($this->gamemode & 0x01) === CREATIVE){
-			return;
-		}
-		$hotbar = [];
-		foreach($this->hotbar as $slot){
-			$hotbar[] = $slot <= -1 ? -1 : $slot + 9;
-		}
-		$pk = new ContainerSetContentPacket;
-		$pk->windowid = 0;
-		$pk->slots = $this->inventory;
-		$pk->hotbar = $hotbar;
-		$this->dataPacket($pk);
+		$this->sendingInventoryRequired = true;
 	}
+
 	/**
 	 * @param $type
 	 * @param $damage
@@ -835,6 +853,7 @@ class Player{
 					$pk->eid = 0;
 					$pk->target = $data["entity"]->eid;
 					$this->dataPacket($pk);
+					
 					if(($this->gamemode & 0x01) === 0x00){
 						$this->addItem($data["entity"]->itemID, $data["entity"]->meta, $data["entity"]->stack, false);
 					}
@@ -952,6 +971,7 @@ class Player{
 				}
 				$item->count += $add;
 				if($send) $this->sendInventorySlot($s);
+				$this->addExpectedSetSlotPacket($s, $item->getID(), $item->getMetadata(), $item->count);
 				
 				$count -= $add;
 				if($count <= 0) return true;
@@ -962,7 +982,10 @@ class Player{
 			if($item->getID() === AIR){
 				$add = min($toadd->getMaxStackSize(), $count);
 				$this->inventory[$s] = BlockAPI::getItem($type, $damage, $add);
+				
 				if($send) $this->sendInventorySlot($s);
+				
+				$this->addExpectedSetSlotPacket($s, $type, $damage, $add);
 				$count -= $add;
 				if($count <= 0) return true;
 			}
@@ -1227,6 +1250,23 @@ class Player{
 			$this->ackQueue = [];
 		}
 
+		
+		if($this->sendingInventoryRequired){
+			if(($this->gamemode & 0x01) !== CREATIVE){
+				$hotbar = [];
+				foreach($this->hotbar as $slot){
+					$hotbar[] = $slot <= -1 ? -1 : $slot + 9;
+				}
+				$pk = new ContainerSetContentPacket;
+				$pk->windowid = 0;
+				$pk->slots = $this->inventory;
+				$pk->hotbar = $hotbar;
+				$this->dataPacket($pk);
+			}
+			
+			$this->sendingInventoryRequired = false;
+		}
+		
 		if(($receiveCnt = count($this->receiveQueue)) > 0){
 			ksort($this->receiveQueue);
 			foreach($this->receiveQueue as $count => $packets){
@@ -1541,7 +1581,27 @@ class Player{
 			}
 		}
 		
+		$cnt = 0;
+		foreach($this->expectedSetSlotPackets as $s => $stuff){
+			$b = current($stuff);
+			if(($this->server->ticks - $b) > 10*20){ //keep slot as expected for 10 seconds, no idea how good will it work
+				++$cnt;
+				$this->removeExpectedSetSlot($s);
+			}
+		}
+		if($cnt > 0) ConsoleAPI::debug("$cnt slots were removed from {$this->iusername}'s expected queue due to timeout");
 	}
+
+	public function sendPing() {
+		$pk = new PingPacket;
+		$pk->time = intdiv(hrtime(true), 1_000_000);
+		$this->directDataPacket($pk);
+	}
+
+	public function getPing() {
+		return $this->lastPing;
+	}
+
 	public function handleDataPacket(RakNetDataPacket $packet){
 		if($this->connected === false){
 			return;
@@ -2127,8 +2187,7 @@ class Player{
 											if(++$bow->meta >= $bow->getMaxDurability()){
 												$this->inventory[$this->slot] = BlockAPI::getItem(AIR, 0, 0);
 											}
-											$this->removeItem(ARROW, 0, 1, false);
-											$this->sendInventory();
+											$this->removeItem(ARROW, 0, 1, send: true);
 										}
 									}
 								}
@@ -2433,56 +2492,38 @@ class Player{
 				if($this->spawned === false or $this->blocked === true){
 					break;
 				}
-
-				if($this->lastCraft <= (microtime(true) - 1)){
-					if(isset($this->toCraft[-1])){
-						$this->toCraft = [-1 => $this->toCraft[-1]];
-					}else{
-						$this->toCraft = [];
-					}
-					$this->craftingItems = [];
-				}
-
-				if($packet->windowid === 0){
-					$craft = false;
+				
+				if($packet->windowid === 0){ //crafting
 					$slot = $this->getSlot($packet->slot);
-
-					if($slot->count >= $packet->item->count && (($slot->getID() === $packet->item->getID() && $slot->getMetadata() === $packet->item->getMetadata()) || ($packet->item->getID() === AIR && $packet->item->count === 0)) && !isset($this->craftingItems[$packet->slot])){ //Crafting recipe
-						if(!isset($this->toCraft[-1])) $this->toCraft[-1] = 0;
-						$use = BlockAPI::getItem($slot->getID(), $slot->getMetadata(), $slot->count - $packet->item->count);
-						$this->craftingItems[$packet->slot] = $use;
-						$craft = true;
-					}elseif($slot->count <= $packet->item->count and ($slot->getID() === AIR or ($slot->getID() === $packet->item->getID() and $slot->getMetadata() === $packet->item->getMetadata()))){ //Crafting final
-						$craftItem = BlockAPI::getItem($packet->item->getID(), $packet->item->getMetadata(), $packet->item->count - $slot->count);
-						if(count($this->toCraft) === 0){
-							$this->toCraft[-1] = 0;
-						}
-						$this->toCraft[$packet->slot] = $craftItem;
-						$craft = true;
-					}elseif(((count($this->toCraft) === 1 and isset($this->toCraft[-1])) or count($this->toCraft) === 0) and $slot->count > 0 and $slot->getID() > AIR and ($slot->getID() !== $packet->item->getID() or $slot->getMetadata() !== $packet->item->getMetadata())){ //Crafting final
-						$craftItem = BlockAPI::getItem($packet->item->getID(), $packet->item->getMetadata(), $packet->item->count);
-						if(count($this->toCraft) === 0){
-							$this->toCraft[-1] = 0;
-						}
-						$use = BlockAPI::getItem($slot->getID(), $slot->getMetadata(), $slot->count);
-						$this->craftingItems[$packet->slot] = $use;
-						$this->toCraft[$packet->slot] = $craftItem;
-						$craft = true;
+					$citem = $packet->item;
+					
+					if(($n = $this->isExpectedSetSlot($packet->slot, $packet->item)) !== false){
+						//ConsoleAPI::debug("Expected setslot at $n found {$packet->item}");
+						$this->removeExpectedSetSlot($n);
+						break;
+					}else{
+						//ConsoleAPI::info("unexpected setslot, assuming caused by crafting {$packet->slot} {$packet->item}");
 					}
-
-					if($craft === true){
-						$this->lastCraft = microtime(true);
-					}
-
-					if($craft === true and count($this->craftingItems) > 0 and count($this->toCraft) > 0 and ($recipe = $this->craftItems($this->toCraft, $this->craftingItems, $this->toCraft[-1])) !== true){
-						if($recipe === false){
-							$this->sendInventory();
-							$this->toCraft = [];
+					
+					if($slot->getID() == $citem->getID() && $slot->getMetadata() == $citem->getMetadata()){
+						
+						if($citem->count > $slot->count){ //item added, result
+							console("{$citem->count} {$slot->count}");
+							$this->addCraftingResult($packet->slot, $slot->getID(), $slot->getMetadata(), $citem->count - $slot->count);
+						}else if($citem->count < $slot->count){ //item removed, ingridient
+							$this->addCraftingIngridient($packet->slot, $slot->getID(), $slot->getMetadata(), $slot->count - $citem->count);
 						}else{
-							$this->toCraft = [-1 => $this->toCraft[-1]];
+							//item synchronized
 						}
-						$this->craftingItems = [];
+					}else if($citem->getID() == 0 && $slot->getID() > 0){ //client sent air, server has not air, ingridient
+						$this->addCraftingIngridient($packet->slot, $slot->getID(), $slot->getMetadata(), $slot->count);
+					}else if($slot->getID() == 0 && $citem->getID() > 0){ //client sent non-air, server has air, result
+						$this->addCraftingResult($packet->slot, $citem->getID(), $citem->getMetadata(), $citem->count);
+					}else{ //client sent result, server has ingridients 
+						$this->addCraftingIngridient($packet->slot, $slot->getID(), $slot->getMetadata(), $slot->count);
+						$this->addCraftingResult($packet->slot, $citem->getID(), $citem->getMetadata(), $citem->count);
 					}
+					
 				}else{
 					$this->toCraft = [];
 					$this->craftingItems = [];
@@ -2673,86 +2714,82 @@ class Player{
 		}
 	}
 
-	public function hasItem($type, $damage = false){
-		foreach($this->inventory as $s => $item){
-			if($item->getID() === $type and ($item->getMetadata() === $damage or $damage === false) and $item->count > 0){
-				return $s;
-			}
+	public function checkCraftAchievements($id){
+		switch($id){
+			case WORKBENCH:
+				AchievementAPI::grantAchievement($this, "buildWorkBench");
+				break;
+			case WOODEN_PICKAXE:
+				AchievementAPI::grantAchievement($this, "buildPickaxe");
+				break;
+			case FURNACE:
+				AchievementAPI::grantAchievement($this, "buildFurnace");
+				break;
+			case WOODEN_HOE:
+				AchievementAPI::grantAchievement($this, "buildHoe");
+				break;
+			case BREAD:
+				AchievementAPI::grantAchievement($this, "makeBread");
+				break;
+			case CAKE:
+				AchievementAPI::grantAchievement($this, "bakeCake");
+				break;
+			case STONE_PICKAXE:
+			case GOLDEN_PICKAXE:
+			case IRON_PICKAXE:
+			case DIAMOND_PICKAXE:
+				AchievementAPI::grantAchievement($this, "buildBetterPickaxe");
+				break;
+			case WOODEN_SWORD:
+				AchievementAPI::grantAchievement($this, "buildSword");
+				break;
+			case DIAMOND:
+				AchievementAPI::grantAchievement($this, "diamond");
+				break;
 		}
-		return false;
 	}
+	
+	public $craftingType = 0;
+	public function tryCraft(){
+		if(count($this->toCraft) <= 0 || count($this->craftingItems) <= 0) return;
+		
+		$results = [];
+		foreach($this->toCraft as $i => $slotz){
+			$results[$i] = [$i >> 16, $i & 0xffff, array_sum($slotz)];
+		}
+		$ingridients = [];
+		foreach($this->craftingItems as $i => $slotz){
+			$ingridients[$i] = [$i >> 16, $i & 0xffff, array_sum($slotz)];
+		}
 
-	public function removeItem($type, $damage, $count, $send = true){
-		while($count > 0){
-			$remove = 0;
-			foreach($this->inventory as $s => $item){
-				if($item->getID() === $type and $item->getMetadata() === $damage){
-					$remove = min($count, $item->count);
-					if($remove < $item->count){
-						$item->count -= $remove;
-					}else{
-						$this->inventory[$s] = BlockAPI::getItem(AIR, 0, 0);
-					}
-					if($send === true){
-						$this->sendInventorySlot($s);
-					}
-					break;
-				}
-			}
-			if($remove <= 0){
+		
+		$cc = CraftingRecipes::canCraft($results, $ingridients, $this->craftingType);
+		if(!is_array($cc)){
+			if(!$cc){
+				$this->toCraft = [];
+				$this->craftingItems = [];
 				return false;
 			}
-			$count -= $remove;
+			return;
 		}
-		return true;
-	}
-
-	/**
-	 * @param array $craft
-	 * @param array $recipe
-	 * @param $type
-	 *
-	 * @return array|bool
-	 */
-	public function craftItems(array $craft, array $recipe, $type){
-		$craftItem = [0, true, 0];
-		unset($craft[-1]);
-
-		if($type !== 0 && $type !== 1 && $type !== 2){ //allow only small(0), big(1) or stone(2)
+		
+		if($this->server->api->dhandle("player.craft", ["player" => $this, "ingridients" => $this->craftingItems, "results" => $this->toCraft, "type" => $this->craftingType]) === false){
+			$this->toCraft = [];
+			$this->craftingItems = [];
 			return false;
 		}
-
-		foreach($craft as $slot => $item){
-			if($item instanceof Item){
-				$craftItem[0] = $item->getID();
-				if($item->getMetadata() !== $craftItem[1] and $craftItem[1] !== true){
-					$craftItem[1] = false;
+		
+		foreach($this->craftingItems as $i => $slotz){
+			$id = $i >> 16;
+			$meta = $i & 0xffff;
+			foreach($slotz as $slot => $count){
+				$slt = $this->getSlot($slot);
+				if($slt->getID() == $id && $slt->getMetadata() == $meta){
+					$slt->count -= $count;
+					if($slt->count <= 0) $this->setSlot($slot, BlockAPI::getItem(0, 0, 0), false);
 				}else{
-					$craftItem[1] = $item->getMetadata();
+					ConsoleAPI::warn("{$slt->getID()} != $id && {$slt->getMetadata()} != $meta!!!");
 				}
-				$craftItem[2] += $item->count;
-			}
-
-		}
-
-		$recipeItems = [];
-		foreach($recipe as $slot => $item){
-			if(!isset($recipeItems[$item->getID()])){
-				$recipeItems[$item->getID()] = [$item->getID(), $item->getMetadata(), $item->count];
-			}else{
-				if($item->getMetadata() !== $recipeItems[$item->getID()][1]){
-					$recipeItems[$item->getID()][1] = false;
-				}
-				$recipeItems[$item->getID()][2] += $item->count;
-			}
-		}
-
-		$res = CraftingRecipes::canCraft($craftItem, $recipeItems, $type);
-
-		if(!is_array($res) and $type === 1){
-			$res2 = CraftingRecipes::canCraft($craftItem, $recipeItems, 0);
-			if(is_array($res2)){
-				$res = $res2;
 			}
 		}
 
@@ -2785,43 +2822,84 @@ class Player{
 					$sY += ($this->entity->random->nextFloat() - $this->entity->random->nextFloat()) * 0.1;
 					$sZ += sin($f3) * $f1;
 					$this->server->api->entity->dropRawPos($this->level, $this->entity->x, $this->entity->y - 0.3 + $this->entity->height - 0.12, $this->entity->z, $item, $sX, $sY, $sZ);
+				}else{
+					$slt = $this->getSlot($slot);
+					if($slt->getID() == $id && $slt->getMetadata() == $meta){
+						$slt->count += $count;
+					}else if($slt->getID() == 0){
+						$this->setSlot($slot, BlockAPI::getItem($id, $meta, $count), false);
+					}else{
+						ConsoleAPI::warn("{$slt->getID()} != $id || 0 !!!");
+					}
 				}
-				
-				$this->sendInventory(); //force send on crafting
-				
-				switch($item->getID()){
-					case WORKBENCH:
-						AchievementAPI::grantAchievement($this, "buildWorkBench");
-						break;
-					case WOODEN_PICKAXE:
-						AchievementAPI::grantAchievement($this, "buildPickaxe");
-						break;
-					case FURNACE:
-						AchievementAPI::grantAchievement($this, "buildFurnace");
-						break;
-					case WOODEN_HOE:
-						AchievementAPI::grantAchievement($this, "buildHoe");
-						break;
-					case BREAD:
-						AchievementAPI::grantAchievement($this, "makeBread");
-						break;
-					case CAKE:
-						AchievementAPI::grantAchievement($this, "bakeCake");
-						$this->addItem(BUCKET, 0, 3);
-						break;
-					case STONE_PICKAXE:
-					case GOLDEN_PICKAXE:
-					case IRON_PICKAXE:
-					case DIAMOND_PICKAXE:
-						AchievementAPI::grantAchievement($this, "buildBetterPickaxe");
-						break;
-					case WOODEN_SWORD:
-						AchievementAPI::grantAchievement($this, "buildSword");
-						break;
-					case DIAMOND:
-						AchievementAPI::grantAchievement($this, "diamond");
-						break;
+			}
+		}
+		
+		$this->sendInventory();
+		$this->toCraft = [];
+		$this->craftingItems = [];
+	}
+	
+	public function addCraftingResult($slot, $id, $meta, $count){
+		$id &= 0xffff;
+		$meta &= 0xffff;
+		
+		$index = ($id << 16) | $meta;
+		
+		if(!isset($this->toCraft[$index])) $this->toCraft[$index] = [];
+		if(!isset($this->toCraft[$index][$slot])) $this->toCraft[$index][$slot] = 0;
+		$this->toCraft[$index][$slot] += $count;
+		
+		console("Result: $id, $meta, $count into $slot");
+		if($this->tryCraft() === false){
+			$this->sendInventory();
+		}
+	}
+	
+	public function addCraftingIngridient($slot, $id, $meta, $count){
+		$id &= 0xffff;
+		$meta &= 0xffff;
+		
+		$index = ($id << 16) | $meta;
+		
+		if(!isset($this->craftingItems[$index])) $this->craftingItems[$index] = [];
+		if(!isset($this->craftingItems[$index][$slot])) $this->craftingItems[$index][$slot] = 0;
+		$this->craftingItems[$index][$slot] += $count;
+		//console("Ingridient: $id, $meta, $count into $slot");
+		if($this->tryCraft() === false){
+			$this->sendInventory();
+		}
+	}
+	
+	public function hasItem($type, $damage = false){
+		foreach($this->inventory as $s => $item){
+			if($item->getID() === $type and ($item->getMetadata() === $damage or $damage === false) and $item->count > 0){
+				return $s;
+			}
+		}
+		return false;
+	}
 
+	public function removeItem($type, $damage, $count, $send = true){
+		while($count > 0){
+			$remove = 0;
+			foreach($this->inventory as $s => $item){
+				if($item->getID() === $type and $item->getMetadata() === $damage){
+					$remove = min($count, $item->count);
+					
+					if($remove < $item->count){
+						$item->count -= $remove;
+						$exid = $item->getID();
+						$exmeta = $item->getMetadata();
+						$excnt = $item->count;
+					}else{
+						$this->inventory[$s] = BlockAPI::getItem(AIR, 0, 0);
+						$exid = $exmeta = $excnt = 0;
+					}
+					if($send === true) $this->sendInventorySlot($s);
+					
+					$this->addExpectedSetSlotPacket($s, $exid, $exmeta, $excnt);
+					break;
 				}
 			}
 		}
