@@ -13,6 +13,7 @@ server.properties
 !.idea/codeStyles/
 !.idea/fileTemplates/
 nbproject/*
+.vscode/settings.json
 
 # Windows image file caches
 Thumbs.db
