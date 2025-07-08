@@ -1,6 +1,6 @@
 # Proto14
 
-Scaxe-Legacy is a fork of NostalgiaCore(Legacy PocketMine-MP 1.3.12), adds new content
+proto14 is a fork of Scaxe-Legacy is a fork of NostalgiaCore(Legacy PocketMine-MP 1.3.12), adds new content and bug fixes
 
 Supported MCPE versions: 0.8.0, 0.8.1 (maybe 0.8.2)
 
@@ -14,8 +14,7 @@ Supported MCPE versions: 0.8.0, 0.8.1 (maybe 0.8.2)
 
 # Contact us
 
-discord: Sunch233#3226
-qq group: 655916398
+discord: babymu5k @ discord
 
 # Third-party Libraries/Protocols Used
 * __[PHP Sockets](http://php.net/manual/en/book.sockets.php)__
