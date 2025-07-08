@@ -3,15 +3,15 @@
 /***REM_START***/
 
 	class Installer{
-		const DEFAULT_NAME = "Minecraft: PE Server";
+		const DEFAULT_NAME = "Proto14: A minecraft PE alpha 0.8.1 Server";
 		const DEFAULT_PORT = 19132;
-		const DEFAULT_MEMORY = 128;
+		const DEFAULT_MEMORY = 512;
 		const DEFAULT_PLAYERS = 20;
 		const DEFAULT_GAMEMODE = SURVIVAL;
 		
 		private $lang, $config;
 		public function __construct(){
-			echo "[*] Scaxe-Legacy set-up wizard\n";
+			echo "[*] Proto14 set-up wizard\n";
 			echo "[*] Please select a language:\n";
 			foreach(InstallerLang::$languages as $short => $native){
 				echo " $native => $short\n";
@@ -172,7 +172,7 @@ LICENSE;
 	class InstallerLang{
 		public static $languages = array(
 			"en" => "English",
-			"zh" => "中文",
+
 		);
 		private $texts = array();
 		private $lang;

@@ -32,7 +32,7 @@ class PocketMinecraftServer{
 	private function load(){
 		global $dolog;
 		/*if(defined("DEBUG") and DEBUG >= 0){
-			@cli_set_process_title("Scaxe-Legacy ".MAJOR_VERSION);
+			@cli_set_process_title("Proto14 ".MAJOR_VERSION);
 		}*/
 		console("[INFO] Starting Minecraft PE server on " . ($this->serverip === "0.0.0.0" ? "*" : $this->serverip) . ":" . $this->port);
 		EntityRegistry::registerEntities();
@@ -75,6 +75,7 @@ class PocketMinecraftServer{
 		if(!defined("NO_THREADS")){
 			$this->asyncThread = new AsyncMultipleQueue();
 		}
+	
 		console("[INFO] Loading extra.yml...");
 		$this->extraprops = new Config(DATA_PATH . "extra.yml", CONFIG_YAML, [
 			"version" => "5",
@@ -86,7 +87,7 @@ class PocketMinecraftServer{
 			"discord-msg" => false,
 			"discord-ru-smiles" => false,
 			"discord-webhook-url" => "none",
-			"discord-bot-name" => "Scaxe-Legacy Logger",
+			"discord-bot-name" => "Proto14 Logger",
 			"despawn-mobs" => true, 
 			"mob-despawn-ticks" => 18000,
 			"16x16x16_chunk_sending" => false,
@@ -94,7 +95,7 @@ class PocketMinecraftServer{
 			"enable-mob-pushing" => Living::$entityPushing,
 			"keep-chunks-loaded" => self::$KEEP_CHUNKS_LOADED,
 			
-			"Scaxe-Legacy" =>[
+			"Proto14" =>[
 				"max-chunks-per-tick" => 4,
                 "view-distance" => 8,
 				"random-tick-speed" => 20,
@@ -103,9 +104,9 @@ class PocketMinecraftServer{
 		]);
 		Player::$experimentalHotbar = $this->extraprops->get("use-experimental-hotbar");
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
-        Player::$maxChunksPerTick = $this->extraprops->getNested("Scaxe-Legacy.max-chunks-per-tick", 4);
-        Player::$viewDistance = $this->extraprops->getNested("Scaxe-Legacy.view-distance", 8);
-		Level::$randomTickSpeed = $this->extraprops->getNested("Scaxe-Legacy.random-tick-speed", 20);
+        Player::$maxChunksPerTick = $this->extraprops->getNested("Proto14.max-chunks-per-tick", 4);
+        Player::$viewDistance = $this->extraprops->getNested("Proto14.view-distance", 8);
+		Level::$randomTickSpeed = $this->extraprops->getNested("Proto14.random-tick-speed", 20);
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Living::$entityPushing = $this->extraprops->get("enable-mob-pushing");
@@ -181,7 +182,7 @@ class PocketMinecraftServer{
 	public function titleTick(){
 		$time = microtime(true);
 		if(defined("DEBUG") and DEBUG >= 0){
-			echo "\x1b]0;Scaxe-Legacy " . MAJOR_VERSION . " | Online " . count($this->clients) . "/" . $this->maxClients . " | RAM " . round((memory_get_usage() / 1024) / 1024, 2) . "MB | U " . round(($this->interface->bandwidth[1] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " D " . round(($this->interface->bandwidth[0] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " kB/s | TPS " . $this->getTPS() . "\x07";
+			echo "\x1b]0;Proto14 " . MAJOR_VERSION . " | Online " . count($this->clients) . "/" . $this->maxClients . " | RAM " . round((memory_get_usage() / 1024) / 1024, 2) . "MB | U " . round(($this->interface->bandwidth[1] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " D " . round(($this->interface->bandwidth[0] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " kB/s | TPS " . $this->getTPS() . "\x07";
 		}
 
 		$this->interface->bandwidth = [0, 0, $time];
@@ -237,12 +238,16 @@ class PocketMinecraftServer{
 		if($this->extraprops->get("discord-msg") == true and $this->extraprops->get("discord-webhook-url") !== "none"){
 			$url = $this->extraprops->get("discord-webhook-url");
 			$name = $this->extraprops->get("discord-bot-name");
+			// Use the latest Discord webhook format (API v10+)
 			$this->asyncOperation(ASYNC_CURL_POST, [
 				"url" => $url,
-				"data" => [
+				"data" => json_encode([
 					"username" => $name,
 					"content" => $this->extraprops->get("discord-ru-smiles") ? str_replace("@", " ", str_replace("Ы", "<:imp_cool:1151085500396998719>", str_replace("Ь", "<:imp_badphp5:1151085478410457120>", str_replace("Ъ", "<:imp_gudjava:1151085431962742784>", str_replace("Ё", "<:imp_wut:1151085524241621012>", $msg))))) : str_replace("@", "", $msg)
-				],
+				]),
+				"headers" => [
+					"Content-Type" => "application/json"
+				]
 			], null);
 		}
 	}
@@ -653,7 +658,7 @@ class PocketMinecraftServer{
 		}
 		ini_set("memory_limit", "-1"); //Fix error dump not dumped on memory problems
 		console("[SEVERE] An unrecovereable has ocurred and the server has crashed. Creating an error dump");
-		$dump = "```\r\n# Scaxe-Legacy Error Dump " . date("D M j H:i:s T Y") . "\r\n";
+		$dump = "```\r\n# Proto14 Error Dump " . date("D M j H:i:s T Y") . "\r\n";
 		$er = error_get_last();
 		$errorConversion = [
 			E_ERROR => "E_ERROR",
@@ -689,12 +694,12 @@ class PocketMinecraftServer{
 			$dump .= "$line\r\n";
 		}
 		$dump .= "\r\n\r\n";
-		$dump .= "Scaxe-Legacy version: " . MAJOR_VERSION . " [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "; API " . CURRENT_API_VERSION . "]\r\n";
+		$dump .= "Proto14 version: " . MAJOR_VERSION . " [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "; API " . CURRENT_API_VERSION . "]\r\n";
 		$dump .= "Git commit: " . GIT_COMMIT . "\r\n";
 		$dump .= "Source SHA1 sum: " . SOURCE_SHA1SUM . "\r\n";
 		$dump .= "uname -a: " . php_uname("a") . "\r\n";
 		$dump .= "PHP Version: " . phpversion() . "\r\n";
-		$dump .= "Zend version: " . zend_version() . "\r\n";
+		//$dump .= "Zend version: " . zend_version() . "\r\n";
 		$dump .= "OS : " . PHP_OS . ", " . Utils::getOS() . "\r\n";
 		$dump .= "Debug Info: " . var_export($this->debugInfo(false), true) . "\r\n\r\n\r\n";
 		global $arguments;

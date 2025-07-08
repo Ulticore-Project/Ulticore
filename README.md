@@ -1,4 +1,4 @@
-# Scaxe-Legacy
+# Proto14
 
 Scaxe-Legacy is a fork of NostalgiaCore(Legacy PocketMine-MP 1.3.12), adds new content
 

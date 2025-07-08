@@ -143,16 +143,16 @@ if(defined("POCKETMINE_COMPILE") and POCKETMINE_COMPILE === true){
 }
 set_include_path(get_include_path() . PATH_SEPARATOR . FILE_PATH);
 
-ini_set("memory_limit", "256M"); //Default
+ini_set("memory_limit", "512M"); //Default
 
 const LOG = true;
 
 define("START_TIME", microtime(true));
 
-const MAJOR_VERSION = "1.0.0";
-const CODENAME = "生存斧服务器"; //i'm not very creative - kotyaralih
+const MAJOR_VERSION = "0.1.0";
+const CODENAME = "Proto-Kyoto"; //i'm not very creative - babymusk
 const CURRENT_MINECRAFT_VERSION = "v0.8.1 alpha";
-const CURRENT_API_VERSION = '12.1';
+const CURRENT_API_VERSION = '12.2';
 const CURRENT_PHP_VERSION = "8.0";
 $gitsha1 = false;
 if(file_exists(FILE_PATH . ".git/refs/heads/master")){ //Found Git information!

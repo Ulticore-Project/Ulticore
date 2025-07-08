@@ -1,5 +1,12 @@
 <?php
 
+function returnRandomDeathMsg(){
+	$msg = array([" has kicked the bucket", " has died", " has RIP'd"]);
+	$rmsg = array_rand($msg, 1);
+	console($rmsg);
+	return $rmsg;
+}
+
 class PlayerAPI{
 
 	private $server;
@@ -59,6 +66,7 @@ class PlayerAPI{
                         return false;
                     }
 				}else{
+					$rmsg = returnRandomDeathMsg();
 					$message = match ($data["cause"]) {
 						"cactus" => " was pricked to death",
 						"lava" => " tried to swim in lava",
@@ -69,7 +77,7 @@ class PlayerAPI{
 						"void" => " fell out of the world",
 						"fall" => " hit the ground too hard",
 						"explosion" => " blew up",
-						default => " died",
+						default => $rmsg,
 					};
 				}
 				$this->server->api->chat->broadcast($data["player"]->username . $message);

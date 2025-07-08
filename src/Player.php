@@ -536,7 +536,7 @@ class Player{
 		}
 		
 		asort($this->chunksOrder);
-        $this->server->schedule(50, [$this, "orderChunks"], []); //这不应该实时更新吗？
+        $this->server->schedule(50, [$this, "orderChunks"], []); //Shouldn't this update in real time?
 	}
 	
 	public function loaddAllChunks(){
@@ -654,8 +654,8 @@ class Player{
             }
             $this->lastChunk = [$x, $z];
         }
-		if($this->lastOrderX != ($this->entity->x >> 4) || $this->lastOrderZ != ($this->entity->z >> 4)){
-			$this->orderChunks();
+		if($this->lastOrderX != ((int)$this->entity->x >> 4) || ((int)$this->lastOrderZ) != ((int)$this->entity->z >> 4)){
+			(int) $this->orderChunks();
 		}
 		
 		$this->server->schedule(1, [$this, "getNextChunk"], $world);
@@ -673,7 +673,7 @@ class Player{
 		}
 		$this->spawnPosition = new Position($pos->x, $pos->y, $pos->z, $level);
 		$pk = new SetSpawnPositionPacket;
-		$pk->x = (int) $this->spawnPosition->x;
+		$pk->x = (int) $this->spawnPosition->x; // Update casting to php 8.1
 		$pk->y = (int) $this->spawnPosition->y;
 		$pk->z = (int) $this->spawnPosition->z;
 		$this->dataPacket($pk);
@@ -1777,7 +1777,7 @@ class Player{
 						$this->orderChunks();
 						$this->blocked = false;
 
-						$this->server->send2Discord($this->username . " joined the game");
+						$this->server->send2Discord($this->username . " joined the server");
 						$this->server->handle("player.spawn", $this);
 						break;
 					case 2://Chunk loaded?

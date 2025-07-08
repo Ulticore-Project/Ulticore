@@ -93,7 +93,7 @@ class UDPServer extends Worker{
             $this->externalQueue[] = igbinary_serialize($data);
         }
 
-        //发包
+        //Outsourcing
         while(count($this->internalQueue) > 0){
             $data = igbinary_unserialize($this->readMainToThreadPacket());
             $socket->write($data['buf'], $data['source'], $data['$port']);

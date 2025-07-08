@@ -7,7 +7,7 @@ require_once("src/world/generator/object/tree/TreeObject.php");
 class SpruceTreeObject extends TreeObject{
 
 	var $type = 1;
-	private $totalHeight = 8;
+	private $totalHeight = 12;
 	private $leavesBottomY = -1;
 	private $leavesMaxRadius = -1;
 

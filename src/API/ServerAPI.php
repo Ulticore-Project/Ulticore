@@ -104,17 +104,18 @@ class ServerAPI{
 		}
 
 		console('
-          _____   _____    ______  __   __  ______
-        /  ___/  /  ___|  / ___  \ \ \ / / |  ____|
-        | |___  | |      | |___| |  \ / /  | |____
-        \___  \ | |      |  ___  |   / /   |  ____|
-         ___| | | |____  | |   | |  / / \  | |____
-        /_____/  \_____| |_|   |_| /_/ \_\ |______| - legacy
-      §eSCAXE-legacy§f is a custom version of §bNostalgiaCore§f.
-      §bVERSION: §6' . MAJOR_VERSION . ' (API ' . CURRENT_API_VERSION . ')
-      §fPHP: §e' . PHP_VERSION . " " . (PHP_INT_SIZE * 8) . 'bit
-      §cAuthor: Sunch233#3226
-      §aQQ Group: 655916398
+		######                             
+		#     # #####   ####  #####  ####  
+		#     # #    # #    #   #   #    # 
+		######  #    # #    #   #   #    # 
+		#       #####  #    #   #   #    # 
+		#       #   #  #    #   #   #    # 
+		#       #    #  ####    #    ####  
+
+      	§aProto14§f is a custom, performant fork of §bScaxe-Legacy§f.
+      	§bVERSION: §6' . MAJOR_VERSION . ' (API ' . CURRENT_API_VERSION . ')
+      	§fPHP: §e' . PHP_VERSION . " " . (PHP_INT_SIZE * 8) . 'bit
+      	§cAuthor: babymu5k @discord
 			');
 
 		console("[INFO] Starting Minecraft PE server version " . FORMAT_AQUA . CURRENT_MINECRAFT_VERSION);
@@ -122,8 +123,8 @@ class ServerAPI{
 		console("[INFO] Loading properties...");
 		$this->config = new Config(DATA_PATH . "server.properties", CONFIG_PROPERTIES, [
 			"server-name" => "Minecraft: PE Server",
-			"description" => "Server made using Scaxe-Legacy",
-			"motd" => "Welcome @player to this server!",
+			"description" => "Server made using Proto14",
+			"motd" => "Welcome §6@player§f to this server!",
 			"server-ip" => "",
 			"server-port" => 19132,
 			"server-type" => "normal",
@@ -175,8 +176,8 @@ class ServerAPI{
 		$this->server->api = $this;
 		self::$serverRequest = $this->server;
 		$this->server->send2Discord("[INFO] Starting Minecraft PE server version " . CURRENT_MINECRAFT_VERSION);
-		console("[INFO] This server is running Scaxe-Legacy version " . MAJOR_VERSION . FORMAT_RESET . " \"" . CODENAME . "\" (MCPE: " . CURRENT_MINECRAFT_VERSION . ") (API " . CURRENT_API_VERSION . ") (PHP " . PHP_VERSION . ")", true, true, 0);
-		console("[INFO] Scaxe-Legacy is distributed under the LGPL License", true, true, 0);
+		console("[INFO] This server is running Proto14 version " . MAJOR_VERSION . FORMAT_RESET . " \"" . CODENAME . "\" (MCPE: " . CURRENT_MINECRAFT_VERSION . ") (API " . CURRENT_API_VERSION . ") (PHP " . PHP_VERSION . ")", true, true, 0);
+		console("[INFO] Proto14 is distributed under the LGPL License", true, true, 0);
 
 		$this->loadProperties();
 		$this->loadAPI("console", "ConsoleAPI");
@@ -274,7 +275,7 @@ class ServerAPI{
 			$value = ["M" => 1, "G" => 1024];
 			$real = ((int) substr($memory, 0, -1)) * $value[substr($memory, -1)];
 			if($real < 128){
-				console("[WARNING] Scaxe-Legacy may not work right with less than 128MB of RAM", true, true, 0);
+				console("[WARNING] Proto14 may not work right with less than 256MB of RAM", true, true, 0);
 			}
 			@ini_set("memory_limit", $memory);
 		}else{

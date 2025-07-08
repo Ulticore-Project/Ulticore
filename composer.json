@@ -1,6 +1,6 @@
 {
-	"name": "sunch233/scaxe-legacy",
-	"description": "Scaxe-Legacy is a fork of NostalgiaCore for MCPE 0.8.1",
+	"name": "babymu5k/proto14",
+	"description": "Proto14 is a fork of Scaxe-Legacy which is a fork of NostalgiaCore for MCPE 0.8.1",
 	"type": "project",
 	"license": "GPL-3.0-or-later",
 	"require": {

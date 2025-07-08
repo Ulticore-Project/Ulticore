@@ -7,7 +7,7 @@ require_once("src/world/generator/object/tree/TreeObject.php");
 class PineTreeObject extends TreeObject{
 
 	var $type = 1;
-	private $totalHeight = 8;
+	private $totalHeight = 10;
 	private $leavesSizeY = -1;
 	private $leavesAbsoluteMaxRadius = -1;
 

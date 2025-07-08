@@ -124,7 +124,7 @@ class TimeAPI{
 		if(!($level instanceof Level)){
 			$level = $this->server->api->level->getDefault();
 		}
-		return $raw === true ? $level->getTime() : abs($level->getTime()) % 19200;
+		return $raw === true ? $level->getTime() : intval(abs($level->getTime()) % 19200);
 	}
 
 	public function getPhase($time = false){

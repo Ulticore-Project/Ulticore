@@ -354,16 +354,16 @@ class PMFLevel extends PMF{
 		if($y > 127 || $y < 0){
 			return 0;
 		}
-		$X = $x >> 4;
-		$Z = $z >> 4;
-		$Y = $y >> 4;
+		$X = (int) $x >> 4; // Update casting to php 8.1
+		$Z = (int) $z >> 4;
+		$Y = (int) $y >> 4;
 		$index = self::getIndex($X, $Z);
 		if(!isset($this->chunks[$index]) || $this->chunks[$index] === false || ($this->chunks[$index][$Y] === false)){
 			return 0;
 		}
-		$aX = $x & 0xf;
-		$aZ = $z & 0xf;
-		$aY = $y & 0xf;
+		$aX = (int) $x & 0xf;
+		$aZ = (int) $z & 0xf;
+		$aY = (int) $y & 0xf;
 		
 		$b = ord($this->chunks[$index][$Y][($aY + ($aX << 5) + ($aZ << 9))]);
 		
@@ -375,15 +375,15 @@ class PMFLevel extends PMF{
 			return false;
 		}
 		
-		$X = $x >> 4;
-		$Z = $z >> 4;
-		$Y = $y >> 4;
+		$X = (int) $x >> 4;
+		$Z = (int) $z >> 4;
+		$Y = (int) $y >> 4;
 		$block &= 0xFF;
 		
 		$index = self::getIndex($X, $Z);
-		$aX = $x & 0xf;
-		$aZ = $z & 0xf;
-		$aY = $y & 0xf;
+		$aX = (int) $x & 0xf;
+		$aZ = (int) $z & 0xf;
+		$aY = (int) $y & 0xf;
 		$bind = $aY + ($aX << 5) + ($aZ << 9);
 		if($this->chunks[$index][$Y][$bind] == chr($block)){
 			return false; //no changes done
@@ -461,9 +461,9 @@ class PMFLevel extends PMF{
 			return [AIR, 0];
 		}
 		
-		$X = $x >> 4;
-		$Z = $z >> 4;
-		$Y = $y >> 4;
+		$X = (int) $x >> 4;
+		$Z = (int) $z >> 4;
+		$Y = (int) $y >> 4;
 		
 		$index = self::getIndex($X, $Z);
 		if(!isset($this->chunks[$index]) || $this->chunks[$index] === false){
@@ -474,22 +474,22 @@ class PMFLevel extends PMF{
 		if($this->chunks[$index][$Y] === false){
 			return [AIR, 0];
 		}
-		$aX = $x & 0xf;
-		$aZ = $z & 0xf;
-		$aY = $y & 0xf;
+		$aX = (int) $x & 0xf;
+		$aZ = (int) $z & 0xf;
+		$aY = (int) $y & 0xf;
 		
 		$b = ord($this->chunks[$index][$Y][($aY + ($aX << 5) + ($aZ << 9))]);
 		
 		$m = ord($this->chunks[$index][$Y][(($aY >> 1) + 16 + ($aX << 5) + ($aZ << 9))]);
-		$m = ($y & 1) ? $m >> 4 : $m & 0xf;
+		$m = (int)($y & 1) ? (int) $m >> 4 : (int) $m & 0xf;
 		
 		return [$b, $m];
 	}
 
 	public function setBlock($x, $y, $z, $block, $meta = 0){
-		$X = $x >> 4;
-		$Z = $z >> 4;
-		$Y = $y >> 4;
+		$X = (int) $x >> 4;
+		$Z = (int) $z >> 4;
+		$Y = (int) $y >> 4;
 		$block &= 0xFF;
 		$meta &= 0x0F;
 		if($x < 0 || $x > 255 || $z < 0 || $z > 255 || $y < 0 || $y > 127){
@@ -503,11 +503,11 @@ class PMFLevel extends PMF{
 		}elseif($this->chunks[$index][$Y] === false){
 			$this->fillMiniChunk($X, $Z, $Y);
 		}
-		$aX = $x - ($X << 4);
-		$aZ = $z - ($Z << 4);
-		$aY = $y - ($Y << 4);
-		$bindex = (int) ($aY + ($aX << 5) + ($aZ << 9));
-		$mindex = ($aY >> 1) + 16 + ($aX << 5) + ($aZ << 9);
+		$aX = (int) $x - ($X << 4);
+		$aZ = (int) $z - ($Z << 4);
+		$aY = (int) $y - ($Y << 4);
+		$bindex = (int) (($aY + ($aX << 5) + ($aZ << 9)));
+		$mindex = (int) (($aY >> 1) + 16 + ($aX << 5) + ($aZ << 9));
 		$old_b = ord($this->chunks[$index][$Y][$bindex]);
 		$old_m = ord($this->chunks[$index][$Y][$mindex]);
 		

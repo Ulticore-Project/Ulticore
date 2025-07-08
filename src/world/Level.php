@@ -894,7 +894,7 @@ class Level{
 	}
 
 	public function getTime(){
-		return $this->time;
+		return (int) $this-> time;
 	}
 
 	public function setTime($time){
