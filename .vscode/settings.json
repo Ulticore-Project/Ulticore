@@ -6,10 +6,12 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         ".vscode": true,
-        "bin": true
+        "bin": true,
+        ".github": true
     },
     "hide-files.files": [
         ".vscode",
-        "bin"
+        "bin",
+        ".github"
     ]
 }

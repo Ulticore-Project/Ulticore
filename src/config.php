@@ -153,7 +153,7 @@ const MAJOR_VERSION = "0.1.0";
 const CODENAME = "Proto-Kyoto"; //i'm not very creative - babymusk
 const CURRENT_MINECRAFT_VERSION = "v0.8.1 alpha";
 const CURRENT_API_VERSION = '12.2';
-const CURRENT_PHP_VERSION = "8.0";
+const CURRENT_PHP_VERSION = "8.1";
 $gitsha1 = false;
 if(file_exists(FILE_PATH . ".git/refs/heads/master")){ //Found Git information!
 	define("GIT_COMMIT", strtolower(trim(file_get_contents(FILE_PATH . ".git/refs/heads/master"))));

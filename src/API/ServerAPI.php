@@ -110,7 +110,7 @@ class ServerAPI{
 		######  #    # #    #   #   #    # 
 		#       #####  #    #   #   #    # 
 		#       #   #  #    #   #   #    # 
-		#       #    #  ####    #    ####  
+		#       #    #  ####    #    ####  -- 14
 
       	§aProto14§f is a custom, performant fork of §bScaxe-Legacy§f.
       	§bVERSION: §6' . MAJOR_VERSION . ' (API ' . CURRENT_API_VERSION . ')
@@ -128,7 +128,7 @@ class ServerAPI{
 			"server-ip" => "",
 			"server-port" => 19132,
 			"server-type" => "normal",
-			"memory-limit" => "128M",
+			"memory-limit" => "512M",
 			"white-list" => false,
 			"announce-player-achievements" => true,
 			"spawn-protection" => 16,
@@ -143,7 +143,7 @@ class ServerAPI{
 			"pvp" => true,
 			"difficulty" => 2,
 			"generator-settings" => "",
-			"level-name" => "world",
+			"level-name" => "1", // Default "world" breaks infiniteworld plugin! do not change
 			"level-seed" => "",
 			"level-type" => "DEFAULT",
 			"enable-query" => true,
