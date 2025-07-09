@@ -1,16 +1,37 @@
 # Proto14
 
-proto14 is a fork of Scaxe-Legacy is a fork of NostalgiaCore(Legacy PocketMine-MP 1.3.12), adds new content and bug fixes
+[![License](https://img.shields.io/github/license/babymu5k/Proto14)]() [![Contributors](https://img.shields.io/github/contributors/babymu5k/Proto14)]() [![](https://img.shields.io/github/last-commit/babymu5k/Proto14)]() [![](https://img.shields.io/github/downloads/babymu5k/Proto14/total)]() [![](https://img.shields.io/github/stars/babymu5k/Proto14
+)]()
 
-Supported MCPE versions: 0.8.0, 0.8.1 (maybe 0.8.2)
+Proto14 is a fork of Scaxe-Legacy (which was itself a fork of NostalgiaCore, based on PocketMine-MP 1.3.12), featuring new content additions and bug fixes. This server software is designed to support older Minecraft: Pocket Edition versions with enhanced performance and features. along with bugfixes and experimental infinite world generation. Each loaded world takes ∼ 20Mbs of Ram (infinite worlds). We recommend using a world unloader plugin to ensure optimal performance.
 
-# New things
+## Features
 
-• new chunk-sending system
+### Core Improvements
+- 🚀 New optimized chunk-sending system
+- ⚡ Better, faster tickProcessor implementation
+- 📡 Asynchronous network I/O for improved performance
+- 🌍 Built-in infinite world system (no plugins required)
 
-• better,fatser tickProcessor
+### Supported MCPE Versions
+- 0.8.0 (fully supported)
+- 0.8.1 (fully supported)
+- 0.8.2 (experimental support)
 
-• asynchronous network I/O
+## Installation
+
+1. Download [PHP 8.1 Binaries](https://github.com/pmmp/PHP-Binaries/releases?page=6):
+   - Make sure to select latest build for your platform (Windows, Linux)
+   - At least 128MB of ram (512Mb recommended)
+
+2. Download the latest release from [GitHub Releases](https://github.com/babymu5k/Proto14/releases)
+    - Unzip the Proto14 source code
+    - Unzip the PHP binaries you have downloaded into the Proto14 folder
+
+3. Depending on your OS run:
+   Linux ```chmod +x start.sh && ./start.sh ```
+   
+   Windows: Run start.cmd
 
 # Contact us
 

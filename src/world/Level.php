@@ -47,6 +47,136 @@ class Level{
 	];
 
 	public static $randomTickSpeed = 20;
+
+	public $minworld = 0;
+	public $maxworld = 200;
+
+	public function getSafeZone($xs, $ys, $zs, $lvl) {
+		$x = (int)round($xs);
+		$y = (int)round($ys);
+		$z = (int)round($zs);
+		$lvl = (string)$lvl;
+		
+		$world = $this->server->api->level->get($lvl);
+		if ($world != false) {
+			for(; $y > 0; --$y) {
+				$v = new Vector3($x, $y, $z);
+				$b = $world->getBlock($v);
+				if($b === false) {
+					return new Position($xs, $ys, $zs, $world);
+				} elseif(!($b instanceof AirBlock)) {
+					break;
+				}
+			}
+			for(; $y < 128; ++$y) {
+				$v = new Vector3($x, $y, $z);
+				if($world->getBlock($v) instanceof AirBlock) {
+					return new Position($x, $y, $z, $world);
+				} else {
+					++$y;
+				}
+			}
+			return new Position($x, $y, $z, $world);
+		}
+		return false;
+	}
+
+	public function checkWorldTransition(Entity $entity) {
+		// Only handle players (not other entities)
+		if (!($entity->player instanceof Player)) {
+			return;
+		}
+
+		$x = round($entity->x);
+		$z = round($entity->z);
+		
+		if($x == 255) {
+			$world = $entity->level->getName();
+			$newworld = ((int)$world + 1);
+			if(($newworld > $this->minworld) && ($newworld < $this->maxworld)) {
+				if($this->server->api->level->loadLevel($newworld)) {                    
+					$safe = $this->getSafeZone(2, 128, $z, $newworld);
+					if($safe != false) {
+						$entity->player->teleport($safe);
+						$entity->player->sendChat("[Server] New World ID: #".$newworld);
+					} else {
+						$entity->player->sendChat("[Server] Failed Infinite World.");
+					}
+				} else {
+					$entity->player->sendChat("[Server] Generating new world.");
+					$this->server->api->level->generateLevel($newworld);
+				}
+			} else {
+				$entity->player->sendChat("[Server] You reached max world.");
+			}
+		}
+		
+		if($x == 0) {
+			$world = $entity->level->getName();
+			$newworld = ((int)$world - 1);
+			if(($newworld > $this->minworld) && ($newworld < $this->maxworld)) {
+				if($this->server->api->level->loadLevel($newworld)) {                    
+					$safe = $this->getSafeZone(254, 128, $z, $newworld);
+					if($safe != false) {
+						$entity->player->teleport($safe);
+						$entity->player->sendChat("[Server] Old World ID: #".$newworld);
+					} else {
+						$entity->player->sendChat("[Server] Failed Infinite World.");
+					}
+				} else {
+					$entity->player->sendChat("[Server] Generating new world.");
+					$this->server->api->level->generateLevel($newworld);
+				}
+			} else {
+				$entity->player->sendChat("[Server] You reached min world.");
+			}
+		}
+		
+		// Similar checks for z-coordinate transitions
+		if($z == 255) {
+			$world = $entity->level->getName();
+			$newworld = ((int)$world + 1);
+			if(($newworld > $this->minworld) && ($newworld < $this->maxworld)) {
+				if($this->server->api->level->loadLevel($newworld)) {                    
+					$safe = $this->getSafeZone($x, 128, 2, $newworld);
+					if($safe != false) {
+						$entity->player->teleport($safe);
+						$entity->player->sendChat("[Server] New World ID: #".$newworld);
+					} else {
+						$entity->player->sendChat("[Server] Failed Infinite world.");
+					}
+				} else {
+					$entity->player->sendChat("[Server] Generating new world.");
+					$this->server->api->level->generateLevel($newworld);
+				}
+			} else {
+				$entity->player->sendChat("[Server] You reached max world.");
+			}
+		}
+		
+		if($z == 0) {
+			$world = $entity->level->getName();
+			$newworld = ((int)$world - 1);
+			if(($newworld > $this->minworld) && ($newworld < $this->maxworld)) {
+				if($this->server->api->level->loadLevel($newworld)) {                    
+					$safe = $this->getSafeZone($x, 128, 254, $newworld);
+					if($safe != false) {
+						$entity->player->teleport($safe);
+						$entity->player->sendChat("[Server] Old World ID: #".$newworld);
+					} else {
+						$entity->player->sendChat("[Server] Failed.");
+					}
+				} else {
+					$entity->player->sendChat("[Server] Generating new world.");
+					$this->server->api->level->generateLevel($newworld);
+				}
+			} else {
+				$entity->player->sendChat("[Server] You reached min world.");
+			}
+		}
+	}
+
+
 	
 	public function __construct(PMFLevel $level, Config $entities, Config $tiles, Config $blockUpdates, $name){
 		$this->server = ServerAPI::request();

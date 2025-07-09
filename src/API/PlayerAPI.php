@@ -250,7 +250,7 @@ class PlayerAPI{
 				$xChunk = $x >> 4;
 				$zChunk = $z >> 4;
 				
-				return "Your coordinates: X: $x ($xChunk), Y: $y, Z: $z ($zChunk), world: $level.\nDirection: $direction";
+				return "Coordinates: X: $x ($xChunk), Y: $y, Z: $z ($zChunk), world: $level.\nDirection: $direction";
 		}
 		return $output;
 	}

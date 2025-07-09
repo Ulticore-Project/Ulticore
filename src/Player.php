@@ -1798,33 +1798,37 @@ class Player{
 					}
 				}
 				break;
-			case ProtocolInfo::MOVE_PLAYER_PACKET:
-				if($this->spawned === false){
-					break;
-				}
-				if($this->isSleeping) break;
-				if(($this->entity instanceof Entity) and $packet->messageIndex > $this->lastMovement){
-					$this->lastMovement = $packet->messageIndex;
-					$newPos = new Vector3($packet->x, $packet->y, $packet->z);
-					if($this->forceMovement instanceof Vector3){
-						if($this->forceMovement->distance($newPos) <= 0.7){
-							$this->forceMovement = false;
-						}else{
-							$this->teleport($this->forceMovement, $this->entity->yaw, $this->entity->pitch, false);
-							break;
-						}
-					}
-					$speed = $this->entity->getSpeedMeasure();
-					if($this->blocked === true or ($this->server->api->getProperty("allow-flight") !== true and (($speed > 9 and ($this->gamemode & 0x01) === 0x00) or $speed > 20 or $this->entity->distance($newPos) > 7)) or $this->server->api->handle("player.move", $this->entity) === false){
-						if($this->lastCorrect instanceof Vector3 && !$this->entity->dead){
-							$this->teleport($this->lastCorrect, $this->entity->yaw, $this->entity->pitch, false);
-						}
-					}else{
-						$this->entity->setPosition($newPos, $packet->yaw, $packet->pitch, $packet->bodyYaw);
-					}
-					$this->entity->updateAABB();
-				}
+				
+		case ProtocolInfo::MOVE_PLAYER_PACKET:
+			if($this->spawned === false){
 				break;
+			}
+			if($this->isSleeping) break;
+			if(($this->entity instanceof Entity) and $packet->messageIndex > $this->lastMovement){
+				$this->lastMovement = $packet->messageIndex;
+				$newPos = new Vector3($packet->x, $packet->y, $packet->z);
+				if($this->forceMovement instanceof Vector3){
+					if($this->forceMovement->distance($newPos) <= 0.7){
+						$this->forceMovement = false;
+					}else{
+						$this->teleport($this->forceMovement, $this->entity->yaw, $this->entity->pitch, false);
+						break;
+					}
+				}
+				$speed = $this->entity->getSpeedMeasure();
+				if($this->blocked === true or ($this->server->api->getProperty("allow-flight") !== true and (($speed > 9 and ($this->gamemode & 0x01) === 0x00) or $speed > 20 or $this->entity->distance($newPos) > 7)) or $this->server->api->handle("player.move", $this->entity) === false){
+					if($this->lastCorrect instanceof Vector3 && !$this->entity->dead){
+						$this->teleport($this->lastCorrect, $this->entity->yaw, $this->entity->pitch, false);
+					}
+				}else{
+					$this->entity->setPosition($newPos, $packet->yaw, $packet->pitch, $packet->bodyYaw);
+					
+					// Add world transition check
+					$this->entity->level->checkWorldTransition($this->entity);
+				}
+				$this->entity->updateAABB();
+			}
+			break;
 			case ProtocolInfo::PLAYER_EQUIPMENT_PACKET:
 				if($this->spawned === false){
 					break;

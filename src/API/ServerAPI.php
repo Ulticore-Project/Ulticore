@@ -112,7 +112,7 @@ class ServerAPI{
 		#       #   #  #    #   #   #    # 
 		#       #    #  ####    #    ####  -- 14
 
-      	§aProto14§f is a custom, performant fork of §bScaxe-Legacy§f.
+      	§aProto14§f is a custom, performant fork of §bScaxe-Legacy§f with psuedo-infinite worlds.
       	§bVERSION: §6' . MAJOR_VERSION . ' (API ' . CURRENT_API_VERSION . ')
       	§fPHP: §e' . PHP_VERSION . " " . (PHP_INT_SIZE * 8) . 'bit
       	§cAuthor: babymu5k @discord
