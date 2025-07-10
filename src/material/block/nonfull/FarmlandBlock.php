@@ -29,29 +29,13 @@ class FarmlandBlock extends TransparentBlock{
 	}
 	
 	public static function onRandomTick(Level $level, $x, $y, $z){
-		for($xx = $x-4; $xx <= $x+4; ++$xx){
-			for($yy = $y; $yy <= $y+1; ++$yy){
-				for($zz = $z-4; $zz <= $z+4; ++$zz){
-					$id = $level->level->getBlockID($xx, $yy, $zz);
-					if($id == WATER || $id == STILL_WATER){
-						$dt = 7;
-						goto set_wet_level;
-					}
-				}
-			}
-		}
-		$dt = $level->level->getBlockDamage($x, $y, $z);
-		if($dt > 0){
-			$dt -= 1;
-			set_wet_level:
-			$level->fastSetBlockUpdateMeta($x, $y, $z, $dt, true);
-			return;
-		}
-		$ab = $level->level->getBlockID($x, $y+1, $z);
-		if($ab != WHEAT_BLOCK){
-			//nc: added carrot/potato/beetroot checks
-			if($ab != CARROT_BLOCK && $ab != POTATO_BLOCK && $ab != BEETROOT_BLOCK){
-				$level->fastSetBlockUpdate($x, $y, $z, DIRT, true);
+		$meta = $level->level->getBlockDamage($x, $y, $z);
+		if(!self::checkWaterStatic($level, $x, $y, $z)){
+			if($meta > 0){
+				--$meta;
+				$level->fastSetBlockUpdate($x, $y, $z, FARMLAND, $meta, true);
+			}else{
+				$level->fastSetBlockUpdate($x, $y, $z, DIRT, 0, true);
 			}
 		}elseif($meta < 7){
 			$level->fastSetBlockUpdate($x, $y, $z, FARMLAND, 7, true);
