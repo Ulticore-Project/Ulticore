@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -e "version\nstop\n" | php -dphar.readonly=0 PocketMine-MP.php --no-wizard --disable-ansi --disable-readline --debug.level=2
+echo -e "version\nstop\n" | bin/php7/bin/php -dphar.readonly=0 PocketMine-MP.php --no-wizard --disable-ansi --disable-readline --debug.level=2
 
 log_file="console.log"
 output=$(cat "$log_file")

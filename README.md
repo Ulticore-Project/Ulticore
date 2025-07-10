@@ -12,6 +12,7 @@ Proto14 is a fork of Scaxe-Legacy (which was itself a fork of NostalgiaCore, bas
 - ⚡ Better, faster tickProcessor implementation
 - 📡 Asynchronous network I/O for improved performance
 - 🌍 Built-in infinite world system (no plugins required)
+- Tick commands have been added (e.g /tick freeze, /tick unfreeze, /tick status)
 
 ### Supported MCPE Versions
 - 0.8.0 (fully supported)

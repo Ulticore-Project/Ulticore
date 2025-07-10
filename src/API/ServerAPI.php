@@ -11,6 +11,11 @@ class ServerAPI{
 	public $queryAPI;
 
 	/**
+	 * @var TickAPI
+	 */
+	 public $tickAPI;
+
+	/**
 	 * @var ConsoleAPI
 	 */
 	public $console;
@@ -190,6 +195,7 @@ class ServerAPI{
 		$this->loadAPI("player", "PlayerAPI");
 		$this->loadAPI("time", "TimeAPI");
 		$this->loadAPI("queryAPI", "QueryAPI");
+		$this->loadAPI("tickAPI", "TickAPI");
 		$this->loadAPI("achievement", "AchievementAPI");
 		foreach($this->apiList as $ob){
 			if(is_callable([$ob, "init"])){

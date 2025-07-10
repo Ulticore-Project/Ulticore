@@ -149,7 +149,7 @@ const LOG = true;
 
 define("START_TIME", microtime(true));
 
-const MAJOR_VERSION = "0.1.0";
+const MAJOR_VERSION = "0.1.1"; // Ver bump
 const CODENAME = "Proto-Kyoto"; //i'm not very creative - babymusk
 const CURRENT_MINECRAFT_VERSION = "v0.8.1 alpha";
 const CURRENT_API_VERSION = '12.2';

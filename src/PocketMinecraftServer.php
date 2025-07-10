@@ -3,6 +3,9 @@
 class PocketMinecraftServer{
 
 	public $tCnt, $ticks;
+	private $tickFrozen = false;
+	private $tickFreezeTime = 0;
+	private $frozenTickCounter = 0;
 	public $extraprops, $serverID, $interface, $database, $version, $invisible, $tickMeasure, $preparedSQL, $seed, $gamemode, $name, $maxClients, $clients, $eidCnt, $custom, $description, $motd, $port, $saveEnabled;
 	/**
 	 * @var ServerAPI
@@ -34,7 +37,7 @@ class PocketMinecraftServer{
 		/*if(defined("DEBUG") and DEBUG >= 0){
 			@cli_set_process_title("Proto14 ".MAJOR_VERSION);
 		}*/
-		console("[INFO] Starting Minecraft PE server on " . ($this->serverip === "0.0.0.0" ? "*" : $this->serverip) . ":" . $this->port);
+		console("[INFO] Starting Proto14 server on " . ($this->serverip === "0.0.0.0" ? "*" : $this->serverip) . ":" . $this->port);
 		EntityRegistry::registerEntities();
 		PlayerNull::$INSTANCE = new PlayerNull();
 		Feature::init();
@@ -83,8 +86,8 @@ class PocketMinecraftServer{
 			"enable-explosions" => true,
 			"save-player-data" => true,
 			"save-console-data" => true,
-			"query-plugins" => false,
-			"discord-msg" => false,
+			"query-plugins" => true,
+			"discord-msg" => true,
 			"discord-ru-smiles" => false,
 			"discord-webhook-url" => "none",
 			"discord-bot-name" => "Proto14 Logger",
@@ -233,21 +236,16 @@ class PocketMinecraftServer{
 			}
 		}
 	}
-	
 	public function send2Discord($msg){
 		if($this->extraprops->get("discord-msg") == true and $this->extraprops->get("discord-webhook-url") !== "none"){
 			$url = $this->extraprops->get("discord-webhook-url");
 			$name = $this->extraprops->get("discord-bot-name");
-			// Use the latest Discord webhook format (API v10+)
 			$this->asyncOperation(ASYNC_CURL_POST, [
 				"url" => $url,
-				"data" => json_encode([
+				"data" => [
 					"username" => $name,
 					"content" => $this->extraprops->get("discord-ru-smiles") ? str_replace("@", " ", str_replace("Ы", "<:imp_cool:1151085500396998719>", str_replace("Ь", "<:imp_badphp5:1151085478410457120>", str_replace("Ъ", "<:imp_gudjava:1151085431962742784>", str_replace("Ё", "<:imp_wut:1151085524241621012>", $msg))))) : str_replace("@", "", $msg)
-				]),
-				"headers" => [
-					"Content-Type" => "application/json"
-				]
+				],
 			], null);
 		}
 	}
@@ -591,10 +589,24 @@ class PocketMinecraftServer{
 
 	public function tick(){
 		$time = microtime(true);
-        if(($time - $this->nextTick) < 0){
-            return;
-        }
-        ++$this->ticks;
+		if(($time - $this->nextTick) < 0){
+			return;
+		}
+		
+		if($this->tickFrozen){
+			$this->frozenTickCounter++;
+			// Process network while frozen
+			$packet = $this->interface->readPacket();
+			if($packet instanceof Packet){
+				$this->packetHandler($packet);
+			}
+			foreach($this->clients as $client){
+				$client->handlePacketQueues();
+			}
+			goto measure;
+		}
+			
+		++$this->ticks;
 			
         foreach($this->clients as $client){
             $client->handlePacketQueues();
@@ -612,6 +624,37 @@ class PocketMinecraftServer{
         }else{
             $this->nextTick += 0.05;
         }
+	measure:
+		array_shift($this->tickMeasure);
+		$this->tickMeasure[] = $this->lastTick = microtime(true);
+		$this->tickerFunction($time);
+
+		if(($this->nextTick - $time) < -1){
+			$this->nextTick = $time;
+		}else{
+			$this->nextTick += 0.05;
+		}
+	}
+
+	public function freezeTicks(){
+		if(!$this->tickFrozen){
+			$this->tickFrozen = true;
+			$this->tickFreezeTime = microtime(true);
+			$this->frozenTickCounter = 0;
+			$this->api->chat->broadcast("Server ticks have been frozen");
+		}
+	}
+
+	public function unfreezeTicks(){
+		if($this->tickFrozen){
+			$this->tickFrozen = false;
+			$duration = round(microtime(true) - $this->tickFreezeTime, 2);
+			$this->api->chat->broadcast("Server ticks resumed after $duration seconds (skipped {$this->frozenTickCounter} ticks)");
+		}
+	}
+
+	public function isTicksFrozen(){
+		return $this->tickFrozen;
 	}
 
 	public function tickerFunction($time){
