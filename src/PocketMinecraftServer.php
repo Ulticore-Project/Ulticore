@@ -90,6 +90,7 @@ class PocketMinecraftServer{
 			"discord-msg" => true,
 			"discord-ru-smiles" => false,
 			"discord-webhook-url" => "none",
+			"discord-image-url" => "none",
 			"discord-bot-name" => "Proto14 Logger",
 			"despawn-mobs" => true, 
 			"mob-despawn-ticks" => 18000,
@@ -124,6 +125,10 @@ class PocketMinecraftServer{
 			}else{
 				console("[WARNING] Discord Logger is enabled in extra.properties,");
 				console("[WARNING] but you didn't put the webhook url, so it won't work.");
+			}
+			if($this->extraprops->get("discord-image-url") !== "none"){
+			}else{
+				console("[WARNING] You have not provided an avatar image for your webhook in extra.yml!");
 			}
 		}elseif($this->extraprops->get("version") == null){
 			console("[WARNING] Your extra.properties file is corrupted!");
@@ -240,12 +245,22 @@ class PocketMinecraftServer{
 		if($this->extraprops->get("discord-msg") == true and $this->extraprops->get("discord-webhook-url") !== "none"){
 			$url = $this->extraprops->get("discord-webhook-url");
 			$name = $this->extraprops->get("discord-bot-name");
-			$this->asyncOperation(ASYNC_CURL_POST, [
-				"url" => $url,
-				"data" => [
+			$imageurl = $this->extraprops->get("discord-image-url");
+			if($imageurl == "none"){
+				$data=[
 					"username" => $name,
 					"content" => $this->extraprops->get("discord-ru-smiles") ? str_replace("@", " ", str_replace("Ы", "<:imp_cool:1151085500396998719>", str_replace("Ь", "<:imp_badphp5:1151085478410457120>", str_replace("Ъ", "<:imp_gudjava:1151085431962742784>", str_replace("Ё", "<:imp_wut:1151085524241621012>", $msg))))) : str_replace("@", "", $msg)
-				],
+				];
+				}else{
+				$data=[
+					"username" => $name,
+					"avatar_url" => $imageurl,
+					"content" => $this->extraprops->get("discord-ru-smiles") ? str_replace("@", " ", str_replace("Ы", "<:imp_cool:1151085500396998719>", str_replace("Ь", "<:imp_badphp5:1151085478410457120>", str_replace("Ъ", "<:imp_gudjava:1151085431962742784>", str_replace("Ё", "<:imp_wut:1151085524241621012>", $msg))))) : str_replace("@", "", $msg)
+				];					
+				}
+			$this->asyncOperation(ASYNC_CURL_POST, [
+				"url" => $url,
+				"data" => $data
 			], null);
 		}
 	}
