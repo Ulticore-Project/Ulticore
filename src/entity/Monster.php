@@ -24,7 +24,7 @@ class Monster extends Creature{
 	}
 	
 	public function isPlayerValid(Player $player){
-		return $player->spawned && !$player->entity->dead;
+		return $player->spawned && !$player->entity->dead && $player->getGamemode() !== 1;
 	}
 	
 	public function handlePrePlayerSearcher(){

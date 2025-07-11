@@ -14,7 +14,7 @@ function UPnP_PortForward($port){
 		if($com === false or !is_object($com->StaticPortMappingCollection)){
 			return false;
 		}
-		$com->StaticPortMappingCollection->Add($port, "UDP", $port, $myLocalIP, true, "Proto14");
+		$com->StaticPortMappingCollection->Add($port, "UDP", $port, $myLocalIP, true, "Ulticore");
 	}catch(Exception $e){
 		return false;
 	}

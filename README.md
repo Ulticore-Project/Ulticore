@@ -1,9 +1,9 @@
-# Proto14
+# Ulticore
 
-[![License](https://img.shields.io/github/license/babymu5k/Proto14)]() [![Contributors](https://img.shields.io/github/contributors/babymu5k/Proto14)]() [![](https://img.shields.io/github/last-commit/babymu5k/Proto14)]() [![](https://img.shields.io/github/downloads/babymu5k/Proto14/total)]() [![](https://img.shields.io/github/stars/babymu5k/Proto14
+[![License](https://img.shields.io/github/license/Ulticore-Project/Ulticore)]() [![Contributors](https://img.shields.io/github/contributors/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/last-commit/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/downloads/Ulticore-Project/Ulticore/total)]() [![](https://img.shields.io/github/stars/Ulticore-Project/Ulticore
 )]()
 
-Proto14 is a fork of Scaxe-Legacy (which was itself a fork of NostalgiaCore, based on PocketMine-MP 1.3.12), featuring new content additions and bug fixes. This server software is designed to support older Minecraft: Pocket Edition versions with enhanced performance and features. along with bugfixes and experimental infinite world generation. Each loaded world takes ∼ 20Mbs of Ram (infinite worlds). We recommend using a world unloader plugin to ensure optimal performance.
+Ulticore is a fork of Scaxe-Legacy (which was itself a fork of NostalgiaCore, based on PocketMine-MP 1.3.12), featuring new content additions and bug fixes. This server software is designed to support older Minecraft: Pocket Edition versions with enhanced performance and features. along with bugfixes and experimental infinite world generation. Each loaded world takes ∼ 20Mbs of Ram (infinite worlds). We recommend using a world unloader plugin to ensure optimal performance.
 
 ## Features
 
@@ -25,9 +25,9 @@ Proto14 is a fork of Scaxe-Legacy (which was itself a fork of NostalgiaCore, bas
    - Make sure to select latest build for your platform (Windows, Linux)
    - At least 128MB of ram (512Mb recommended)
 
-2. Download the latest release from [GitHub Releases](https://github.com/babymu5k/Proto14/releases)
-    - Unzip the Proto14 source code
-    - Unzip the PHP binaries you have downloaded into the Proto14 folder
+2. Download the latest release from [GitHub Releases](https://github.com/Ulticore-Project/Ulticore/releases)
+    - Unzip the Ulticore source code
+    - Unzip the PHP binaries you have downloaded into the Ulticore folder
 
 3. Depending on your OS run:
    Linux ```chmod +x start.sh && ./start.sh ```

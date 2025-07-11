@@ -175,12 +175,15 @@ class BanAPI{
 
 			case "oplist":
 				$ops = $this->ops->getAll(true); // Get all ops as array
-				
-				foreach ($ops as $opName) {;
-					$output .= "§cOperators§f (" . count($ops) . "):\n"."- ".$opName. "\n";
+				if(count($ops)> 0){
+					foreach ($ops as $opName) {;
+						$output .= "§cOperators§f (" . count($ops) . "):\n"."- ".$opName. "\n";
+					}
+					break;
+				}else{
+					$output .= "No §cOperators§f :(";
+					break;
 				}
-				break;
-			
 			case "deop":
 				if(!isset($params[0])){
 					$output .= "Usage: /deop <player>\n";

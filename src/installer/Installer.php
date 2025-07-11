@@ -3,7 +3,7 @@
 /***REM_START***/
 
 	class Installer{
-		const DEFAULT_NAME = "Proto14: A minecraft PE alpha 0.8.1 Server";
+		const DEFAULT_NAME = "Ulticore: A minecraft PE alpha 0.8.1 Server";
 		const DEFAULT_PORT = 19132;
 		const DEFAULT_MEMORY = 512;
 		const DEFAULT_PLAYERS = 20;
@@ -11,7 +11,7 @@
 		
 		private $lang, $config;
 		public function __construct(){
-			echo "[*] Proto14 set-up wizard\n";
+			echo "[*] Ulticore set-up wizard\n";
 			echo "[*] Please select a language:\n";
 			foreach(InstallerLang::$languages as $short => $native){
 				echo " $native => $short\n";

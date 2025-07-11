@@ -109,15 +109,17 @@ class ServerAPI{
 		}
 
 		console('
-		######                             
-		#     # #####   ####  #####  ####  
-		#     # #    # #    #   #   #    # 
-		######  #    # #    #   #   #    # 
-		#       #####  #    #   #   #    # 
-		#       #   #  #    #   #   #    # 
-		#       #    #  ####    #    ####  -- 14
+	$$\   $$\ $$\   $$\     $$\                                         
+	$$ |  $$ |$$ |  $$ |    \__|                                        
+	$$ |  $$ |$$ |$$$$$$\   $$\  $$$$$$$\  $$$$$$\   $$$$$$\   $$$$$$\  
+	$$ |  $$ |$$ |\_$$  _|  $$ |$$  _____|$$  __$$\ $$  __$$\ $$  __$$\ 
+	$$ |  $$ |$$ |  $$ |    $$ |$$ /      $$ /  $$ |$$ |  \__|$$$$$$$$ |
+	$$ |  $$ |$$ |  $$ |$$\ $$ |$$ |      $$ |  $$ |$$ |      $$   ____|
+	\$$$$$$  |$$ |  \$$$$  |$$ |\$$$$$$$\ \$$$$$$  |$$ |      \$$$$$$$\ 
+	\______/ \__|   \____/ \__| \_______| \______/ \__|       \_______|
+                                                                    
 
-      	§aProto14§f is a custom, performant fork of §bScaxe-Legacy§f with psuedo-infinite worlds.
+      	§aUlticore§f is a custom, performant fork of §bScaxe-Legacy§f with psuedo-infinite worlds.
       	§bVERSION: §6' . MAJOR_VERSION . ' (API ' . CURRENT_API_VERSION . ')
       	§fPHP: §e' . PHP_VERSION . " " . (PHP_INT_SIZE * 8) . 'bit
       	§cAuthor: babymu5k @discord
@@ -128,7 +130,7 @@ class ServerAPI{
 		console("[INFO] Loading properties...");
 		$this->config = new Config(DATA_PATH . "server.properties", CONFIG_PROPERTIES, [
 			"server-name" => "Minecraft: PE Server",
-			"description" => "Server made using Proto14",
+			"description" => "Server made using Ulticore",
 			"motd" => "Welcome §6@player§f to this server!",
 			"server-ip" => "",
 			"server-port" => 19132,
@@ -181,8 +183,8 @@ class ServerAPI{
 		$this->server->api = $this;
 		self::$serverRequest = $this->server;
 		$this->server->send2Discord("[INFO] Starting Minecraft PE server version " . CURRENT_MINECRAFT_VERSION);
-		console("[INFO] This server is running Proto14 version " . MAJOR_VERSION . FORMAT_RESET . " \"" . CODENAME . "\" (MCPE: " . CURRENT_MINECRAFT_VERSION . ") (API " . CURRENT_API_VERSION . ") (PHP " . PHP_VERSION . ")", true, true, 0);
-		console("[INFO] Proto14 is distributed under the LGPL License", true, true, 0);
+		console("[INFO] This server is running Ulticore version " . MAJOR_VERSION . FORMAT_RESET . " \"" . CODENAME . "\" (MCPE: " . CURRENT_MINECRAFT_VERSION . ") (API " . CURRENT_API_VERSION . ") (PHP " . PHP_VERSION . ")", true, true, 0);
+		console("[INFO] Ulticore is distributed under the LGPL License", true, true, 0);
 
 		$this->loadProperties();
 		$this->loadAPI("console", "ConsoleAPI");
@@ -281,7 +283,7 @@ class ServerAPI{
 			$value = ["M" => 1, "G" => 1024];
 			$real = ((int) substr($memory, 0, -1)) * $value[substr($memory, -1)];
 			if($real < 128){
-				console("[WARNING] Proto14 may not work right with less than 256MB of RAM", true, true, 0);
+				console("[WARNING] Ulticore may not work right with less than 256MB of RAM", true, true, 0);
 			}
 			@ini_set("memory_limit", $memory);
 		}else{

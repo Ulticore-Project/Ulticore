@@ -35,9 +35,9 @@ class PocketMinecraftServer{
 	private function load(){
 		global $dolog;
 		/*if(defined("DEBUG") and DEBUG >= 0){
-			@cli_set_process_title("Proto14 ".MAJOR_VERSION);
+			@cli_set_process_title("Ulticore ".MAJOR_VERSION);
 		}*/
-		console("[INFO] Starting Proto14 server on " . ($this->serverip === "0.0.0.0" ? "*" : $this->serverip) . ":" . $this->port);
+		console("[INFO] Starting Ulticore server on " . ($this->serverip === "0.0.0.0" ? "*" : $this->serverip) . ":" . $this->port);
 		EntityRegistry::registerEntities();
 		PlayerNull::$INSTANCE = new PlayerNull();
 		Feature::init();
@@ -91,7 +91,7 @@ class PocketMinecraftServer{
 			"discord-ru-smiles" => false,
 			"discord-webhook-url" => "none",
 			"discord-image-url" => "none",
-			"discord-bot-name" => "Proto14 Logger",
+			"discord-bot-name" => "Ulticore Logger",
 			"despawn-mobs" => true, 
 			"mob-despawn-ticks" => 18000,
 			"16x16x16_chunk_sending" => false,
@@ -99,7 +99,7 @@ class PocketMinecraftServer{
 			"enable-mob-pushing" => Living::$entityPushing,
 			"keep-chunks-loaded" => self::$KEEP_CHUNKS_LOADED,
 			
-			"Proto14" =>[
+			"Ulticore" =>[
 				"max-chunks-per-tick" => 4,
                 "view-distance" => 8,
 				"random-tick-speed" => 20,
@@ -108,9 +108,9 @@ class PocketMinecraftServer{
 		]);
 		Player::$experimentalHotbar = $this->extraprops->get("use-experimental-hotbar");
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
-        Player::$maxChunksPerTick = $this->extraprops->getNested("Proto14.max-chunks-per-tick", 4);
-        Player::$viewDistance = $this->extraprops->getNested("Proto14.view-distance", 8);
-		Level::$randomTickSpeed = $this->extraprops->getNested("Proto14.random-tick-speed", 20);
+        Player::$maxChunksPerTick = $this->extraprops->getNested("Ulticore.max-chunks-per-tick", 4);
+        Player::$viewDistance = $this->extraprops->getNested("Ulticore.view-distance", 8);
+		Level::$randomTickSpeed = $this->extraprops->getNested("Ulticore.random-tick-speed", 20);
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Living::$entityPushing = $this->extraprops->get("enable-mob-pushing");
@@ -190,7 +190,7 @@ class PocketMinecraftServer{
 	public function titleTick(){
 		$time = microtime(true);
 		if(defined("DEBUG") and DEBUG >= 0){
-			echo "\x1b]0;Proto14 " . MAJOR_VERSION . " | Online " . count($this->clients) . "/" . $this->maxClients . " | RAM " . round((memory_get_usage() / 1024) / 1024, 2) . "MB | U " . round(($this->interface->bandwidth[1] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " D " . round(($this->interface->bandwidth[0] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " kB/s | TPS " . $this->getTPS() . "\x07";
+			echo "\x1b]0;Ulticore " . MAJOR_VERSION . " | Online " . count($this->clients) . "/" . $this->maxClients . " | RAM " . round((memory_get_usage() / 1024) / 1024, 2) . "MB | U " . round(($this->interface->bandwidth[1] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " D " . round(($this->interface->bandwidth[0] / max(1, $time - $this->interface->bandwidth[2])) / 1024, 2) . " kB/s | TPS " . $this->getTPS() . "\x07";
 		}
 
 		$this->interface->bandwidth = [0, 0, $time];
@@ -716,7 +716,7 @@ class PocketMinecraftServer{
 		}
 		ini_set("memory_limit", "-1"); //Fix error dump not dumped on memory problems
 		console("[SEVERE] An unrecovereable has ocurred and the server has crashed. Creating an error dump");
-		$dump = "```\r\n# Proto14 Error Dump " . date("D M j H:i:s T Y") . "\r\n";
+		$dump = "```\r\n# Ulticore Error Dump " . date("D M j H:i:s T Y") . "\r\n";
 		$er = error_get_last();
 		$errorConversion = [
 			E_ERROR => "E_ERROR",
@@ -752,7 +752,7 @@ class PocketMinecraftServer{
 			$dump .= "$line\r\n";
 		}
 		$dump .= "\r\n\r\n";
-		$dump .= "Proto14 version: " . MAJOR_VERSION . " [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "; API " . CURRENT_API_VERSION . "]\r\n";
+		$dump .= "Ulticore version: " . MAJOR_VERSION . " [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "; API " . CURRENT_API_VERSION . "]\r\n";
 		$dump .= "Git commit: " . GIT_COMMIT . "\r\n";
 		$dump .= "Source SHA1 sum: " . SOURCE_SHA1SUM . "\r\n";
 		$dump .= "uname -a: " . php_uname("a") . "\r\n";
