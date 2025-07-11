@@ -150,7 +150,7 @@ class ServerAPI{
 			"pvp" => true,
 			"difficulty" => 2,
 			"generator-settings" => "",
-			"level-name" => "1", // Default "world" breaks infiniteworld plugin! do not change
+			"level-name" => "0", // Default "world" breaks infiniteworld plugin! do not change
 			"level-seed" => "",
 			"level-type" => "DEFAULT",
 			"enable-query" => true,

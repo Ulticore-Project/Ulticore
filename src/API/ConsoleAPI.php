@@ -22,8 +22,11 @@ class ConsoleAPI{
 		$this->register("difficulty", "<0|1|2|3>", [$this, "defaultCommands"]);
 		$this->register("stop", "", [$this, "defaultCommands"]);
 		$this->register("defaultgamemode", "<mode>", [$this, "defaultCommands"]);
+		$this->register("clear", "clear screen", [$this, "defaultCommands"]);
 
 		$this->server->api->console->alias("tps", "status");
+		$this->server->api->console->alias("cls", "clear");
+
   
 		$this->cmdWhitelist("help");
 		$this->cmdWhitelist("status");
@@ -207,12 +210,19 @@ class ConsoleAPI{
 				$this->server->api->setProperty("gamemode", $gms[strtolower($params[0])]);
 				$output .= "Default Gamemode is now " . strtoupper($this->server->getGamemode()) . ".\n";
 				break;
+
+			case "clear":
+				// ANSI escape code for clearing screen
+				echo "\033[2J\033[;H";
+				return;
+				break;
+
 			case "status":
 				$info = $this->server->debugInfo();
 				if(!($issuer instanceof Player) && $issuer === "console"){
-					return "TPS: {$info["tps"]}, Memory usage: {$info["memory_usage"]} (Peak {$info["memory_peak_usage"]}), Entities: {$info["entities"]}, Events: {$info["events"]}, Handlers: {$info["handlers"]}, Actions: {$info["actions"]}, Garbage: {$info["garbage"]}";
+					return "TPS: {$info["tps"]}, Memory usage: {$info["memory_usage"]} / ". strtoupper($this->server->api->getProperty("memory-limit"))."B". " (Peak {$info["memory_peak_usage"]}), Entities: {$info["entities"]}, Events: {$info["events"]}, Handlers: {$info["handlers"]}, Actions: {$info["actions"]}, Garbage: {$info["garbage"]}";
 				}
-				return "TPS: {$info["tps"]}, Memory usage: {$info["memory_usage"]} (Peak {$info["memory_peak_usage"]})";
+				return "TPS: {$info["tps"]}, Memory usage: {$info["memory_usage"]} / ". strtoupper($this->server->api->getProperty("memory-limit"))."B"." (Peak {$info["memory_peak_usage"]})";
 			case "stop":
 				self::$loop->stop = true;
 				$this->server->close();

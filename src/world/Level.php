@@ -48,7 +48,7 @@ class Level{
 
 	public static $randomTickSpeed = 20;
 
-	public $minworld = 0;
+	public $minworld = -235;
 	public $maxworld = 235; // Roughly same size as a java minecraft world (slightly bigger) Max size of worlds folder can only be ~300 Mb's
 
 	public function getSafeZone($xs, $ys, $zs, $lvl) {

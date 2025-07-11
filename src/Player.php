@@ -103,7 +103,7 @@ class Player{
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->spawnPosition = $this->server->spawn;
-		$this->timeout = microtime(true) + 20;
+		$this->timeout = microtime(true) + 40;
 		$this->inventory = [];
 		$this->armor = [];
 		$this->gamemode = $this->server->gamemode;

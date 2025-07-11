@@ -26,7 +26,7 @@ if [ "$PHP_BINARY" == "" ]; then
 	elif [[ ! -z $(type php) ]]; then
 		PHP_BINARY=$(type -p php)
 	else
-		echo​ ​"​Couldn't find a PHP binary in system PATH or ​$PWD​/bin/php5/bin​"
+		echo​ ​"​Couldn't find a PHP binary in system PATH or ​$PWD​/bin/php5/bin​"
 		exit 1
 	fi
 fi
@@ -35,8 +35,8 @@ if [ "$POCKETMINE_FILE" == "" ]; then
 	if [ -f ./PocketMine-MP.php ]; then
 		POCKETMINE_FILE="./PocketMine-MP.php"
 	else
-		echo​ ​"​PocketMine-MP.php not found​" 
- ​ echo​ ​"​Downloads can be found at https://github.com/kotyaralih/NostalgiaCore"
+		echo​ ​"​PocketMine-MP.php not found​" 
+ ​ echo​ ​"​Downloads can be found at https://github.com/kotyaralih/NostalgiaCore"
 		exit 1
 	fi
 fi
@@ -51,7 +51,7 @@ if [ "$DO_LOOP" == "yes" ]; then
 			echo "Restarted $LOOPS times"
 		fi
 		"$PHP_BINARY" "$POCKETMINE_FILE" $@
-		echo "To escape the loop, press CTRL+C now. Otherwise, wait 2 seconds for the server to restart.​"
+		echo "To escape the loop, press CTRL+C now. Otherwise, wait 2 seconds for the server to restart.​"
 		sleep 2
 		((LOOPS++))
 	done

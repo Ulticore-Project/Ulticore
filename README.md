@@ -1,4 +1,4 @@
-# Ulticore
+# Ulticore - A 0.8.1 Server
 
 [![License](https://img.shields.io/github/license/Ulticore-Project/Ulticore)]() [![Contributors](https://img.shields.io/github/contributors/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/last-commit/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/downloads/Ulticore-Project/Ulticore/total)]() [![](https://img.shields.io/github/stars/Ulticore-Project/Ulticore
 )]()
@@ -20,7 +20,7 @@ While rooted in classic MCPE server software, Ulticore introduces:
 | Feature          | Old Forks (e.g., NostalgiaCore) | **Ulticore** |  
 |------------------|-------------------------------|--------------|  
 | **World Size**   | Limited/finite                | **Pseudo Infinite** |  
-| **RAM Usage**    | Unoptimized (high per-world)  | **~20MB/world** (efficient) |  
+| **RAM Usage**    | Unoptimized (high per-world)  | **~20MB/ loaded world** (efficient) |  
 | **Stability**    | Frequent crashes              | **Patched exploits & memory leaks** |  
 | **Plugin Support** | Fragmented APIs              | **Backward-compatible + new tools** |
 | **Network Packets** | Slow IO              | **Asynchronous network I/O** |
@@ -28,7 +28,7 @@ While rooted in classic MCPE server software, Ulticore introduces:
 
 ### **Optimization Recommendations**  
 For best performance:  
-- Use a **world unloader plugin** to free RAM from inactive worlds.  
+- Use the [**world unloader plugin**](https://github.com/Ulticore-Project/ulticore-plugins/blob/main/worldunloader.php) to free RAM from inactive worlds.  
 - Limit concurrent infinite worlds (each consumes ≈20MB).  
 - Allocate **≥256MB RAM** for small servers, **1024MB** for larger servers.  
 
