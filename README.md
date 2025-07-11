@@ -3,7 +3,77 @@
 [![License](https://img.shields.io/github/license/Ulticore-Project/Ulticore)]() [![Contributors](https://img.shields.io/github/contributors/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/last-commit/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/downloads/Ulticore-Project/Ulticore/total)]() [![](https://img.shields.io/github/stars/Ulticore-Project/Ulticore
 )]()
 
-Ulticore is a fork of Scaxe-Legacy (which was itself a fork of NostalgiaCore, based on PocketMine-MP 1.3.12), featuring new content additions and bug fixes. This server software is designed to support older Minecraft: Pocket Edition versions with enhanced performance and features. along with bugfixes and experimental infinite world generation. Each loaded world takes ∼ 20Mbs of Ram (infinite worlds). We recommend using a world unloader plugin to ensure optimal performance.
+---
+
+## **About Ulticore**  
+
+**Ulticore** is a modernized fork of **Scaxe-Legacy** (itself derived from *NostalgiaCore*, originally based on *PocketMine-MP 1.3.12*), rebuilt to deliver **enhanced performance, stability, and features** for *Minecraft: Pocket Edition Alpha* servers.  
+
+### **Built for a Smooth, Stable Experience**  
+While rooted in classic MCPE server software, Ulticore introduces:  
+- **Critical bug fixes** – Addressing long-standing crashes and gameplay issues from abandoned predecessors.  
+- **Experimental infinite worlds** – Support for expansive terrain generation (≈20MB RAM per loaded world).  
+- **Performance optimizations** – Reduced lag, smarter entity handling, and efficient chunk management.
+- **New Commands** - Commands such as /oplist and /tick have been added. 
+
+### **Key Improvements Over Legacy Forks**  
+| Feature          | Old Forks (e.g., NostalgiaCore) | **Ulticore** |  
+|------------------|-------------------------------|--------------|  
+| **World Size**   | Limited/finite                | **Pseudo Infinite** |  
+| **RAM Usage**    | Unoptimized (high per-world)  | **~20MB/world** (efficient) |  
+| **Stability**    | Frequent crashes              | **Patched exploits & memory leaks** |  
+| **Plugin Support** | Fragmented APIs              | **Backward-compatible + new tools** |
+| **Network Packets** | Slow IO              | **Asynchronous network I/O** |
+| **Tick Processing** | Slow tick processor              | **Improved tick performance** |
+
+### **Optimization Recommendations**  
+For best performance:  
+- Use a **world unloader plugin** to free RAM from inactive worlds.  
+- Limit concurrent infinite worlds (each consumes ≈20MB).  
+- Allocate **≥256MB RAM** for small servers, **1024MB** for larger servers.  
+
+### **Why This Matters**  
+Ulticore bridges the gap between *old MCPE’s charm* and *modern server demands*—offering:  
+
+🔹 **Nostalgia**: Faithful gameplay for Alpha 0.8.X.  
+🔹 **Innovation**: Experimental features like infinite worlds.  
+🔹 **Longevity**: A maintained codebase where older forks stagnated.  
+
+**Target Versions**: Primarily *MCPE Alpha 0.8.1*.  
+
+---
+
+### **Technical Footnotes**  
+- **RAM Usage**: Lower than predecessors but scales with player count/entities.  
+- **Compatibility**: Retains most *PocketMine-MP 1.3.12* plugin APIs while adding new extensions.  
+
+
+---
+
+## **Why Choose Ulticore?**  
+
+### **A Solution to Fragmentation**  
+The Minecraft Pocket Edition Alpha 0.8.1 ecosystem has long suffered from **community fragmentation**. Lots of abandoned server forks, incompatible plugins, and unstable builds have made it difficult for players and developers to maintain a consistent multiplayer experience.  
+
+**Ulticore was born in response.**  
+
+### **Our Goal**  
+Ulticore is designed to be the **definitive server software** for MCPE Alpha 0.8.1, unifying the scattered landscape of older forks and plugins under one stable, extensible platform.  
+
+We aim to:   **Replace abandoned and outdated forks** – No more digging through broken, unsupported codebases.   **Standardize plugin development** – A single, well-documented API for all plugins.   **Revive the MCPE 0.8.1 multiplayer scene** – By providing a reliable, feature-rich server for new and old communities alike.  
+
+### **History & Vision**  
+Originally inspired by the limitations of early MCPE server software, Ulticore was forked from Scaxe-Legacy to:  
+- **Improve stability** – Fewer crashes, better memory management, and smoother gameplay.  
+- **Support modern tooling** – Easier setup, better configuration, and compatibility with current dev tools.  
+- **Encourage collaboration** – Instead of competing forks, we want one **community-driven** project that evolves over time.  
+
+### **One Ecosystem for All**  
+Ulticore isn’t just another fork—it’s a **fresh start** for MCPE Alpha 0.8.1 servers. By consolidating the best features from past projects and adding new improvements, we’re creating a **long-term foundation** for:  
+🔹 **Server owners** – A hassle-free way to host 0.8.1 worlds with minimal setup.  
+🔹 **Plugin developers** – A stable API that doesn’t break between updates.  
+🔹 **Players** – A consistent, lag-free experience with active support.  
+
 
 ## Features
 
@@ -12,7 +82,7 @@ Ulticore is a fork of Scaxe-Legacy (which was itself a fork of NostalgiaCore, ba
 - ⚡ Better, faster tickProcessor implementation
 - 📡 Asynchronous network I/O for improved performance
 - 🌍 Built-in infinite world system (no plugins required)
-- Tick commands have been added (e.g /tick freeze, /tick unfreeze, /tick status)
+- ⏰ Tick commands have been added (e.g /tick freeze, /tick unfreeze, /tick status)
 
 ### Supported MCPE Versions
 - 0.8.0 (fully supported)
