@@ -175,9 +175,11 @@ class BanAPI{
 
 			case "oplist":
 				$ops = $this->ops->getAll(true); // Get all ops as array
+				sort($ops);
 				if(count($ops)> 0){
+					$output .= "§cOperators§f (" . count($ops) . ")\n";
 					foreach ($ops as $opName) {;
-						$output .= "§cOperators§f (" . count($ops) . "):\n"."- ".$opName. "\n";
+						$output .= "- ".$opName. "\n";
 					}
 					break;
 				}else{

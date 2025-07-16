@@ -158,6 +158,12 @@ class VanillaGenerator implements LevelGenerator
 		
 		for($Y = 0; $Y < 8; ++$Y){
 			$index = ($chunkZ << 4) + $chunkX;
+			if (!isset($this->level->level->chunks[$index]) || !is_array($this->level->level->chunks[$index])) {
+				$this->level->level->chunks[$index] = [];
+			}
+			if (!isset($this->level->level->chunkChange[$index]) || !is_array($this->level->level->chunkChange[$index])) {
+				$this->level->level->chunkChange[$index] = [];
+			}
 			$this->level->level->chunks[$index][$Y] = $chunkz[$Y];
 			$this->level->level->chunkChange[$index][$Y] = 8192;
 			$this->level->level->locationTable[$index][0] |= 1 << $Y; //TODO mv out of loop

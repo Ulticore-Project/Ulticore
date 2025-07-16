@@ -171,8 +171,23 @@ LICENSE;
 
 	class InstallerLang{
 		public static $languages = array(
+			"ru" => "Pyccĸий",
 			"en" => "English",
-
+			"es" => "Español",
+			"zh" => "中文",
+			"ja" => "日本語",
+			"de" => "Deutsch",
+			"ko" => "한국어",
+			"fr" => "Français",
+			"it" => "Italiano",	
+			//"lv" => "Latviešu",
+			"nl" => "Nederlands",
+			//"pt" => "Português",
+			"sv" => "Svenska",
+			"fi" => "Suomi",
+			"tr" => "Türkçe",
+			"uk" => "Український"
+			//"et" => "Eesti",
 		);
 		private $texts = array();
 		private $lang;
