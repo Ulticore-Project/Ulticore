@@ -289,7 +289,7 @@ abstract class Living extends Entity implements Pathfindable{
 				$this->speedY = 0.2;
 			}
 			
-			$this->speedY -= 0.08; //gravity
+			$this->speedY -= 0.10; //gravity
 			
 			$this->speedY *= 0.98;
 			$this->speedX *= $friction;

@@ -140,7 +140,7 @@ class Entity extends Position
 		$this->closed = false;
 		$this->isStatic = false;
 		$this->name = "";
-		$this->gravity = 0.08;
+		$this->gravity = 0.10;
 		$this->state = $this->data["State"] = $this->data["State"] ?? 0;
 		$this->tickCounter = 0;
 		$this->x = isset($this->data["x"]) ? (float) $this->data["x"] : 0;
