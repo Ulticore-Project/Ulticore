@@ -2622,7 +2622,7 @@ class Player{
 				break;
 			case ProtocolInfo::SET_ENTITY_LINK_PACKET:
 				if($this->entity->riding != 0){
-					$this->entity->setRiding(null);
+					$this->entity->setRiding(EntityNull::$INSTANCE);
 				}
 				break;
 			case ProtocolInfo::PLAYER_INPUT_PACKET:
