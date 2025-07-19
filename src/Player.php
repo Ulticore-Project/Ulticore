@@ -21,6 +21,7 @@ class Player{
 	public $armor = [];
 	public $loggedIn = false;
 	public $gamemode;
+	public $gmKickSoon = false;
 	public $lastBreak;
 	public $windowCnt = 2;
 	public $windows = [];
@@ -1106,6 +1107,7 @@ class Player{
 			foreach($this->inventory as $slot => $item){
 				$inv[$slot] = BlockAPI::getItem(AIR, 0, 0);
 			}
+			$this->hotbar = $gm == CREATIVE ? BlockAPI::$creativeHotbarSlots : [0, 1, 2, 3, 4, 5, 6, 7, 8];
 			$this->lastCorrect = $this->entity->copy();
 			$this->blocked = true;	
 			if(($this->gamemode & 1) != ($gm & 1)){
@@ -1113,6 +1115,7 @@ class Player{
 			}
 			$this->gamemode = $gm;
 			$this->sendChat("Your gamemode has been changed to " . $this->getGamemode() . ", you've to do a forced reconnect.\n");
+			$this->gmKickSoon = true;
 			$this->server->schedule(30, [$this, "close"], "gamemode change", false, true); //Forces a kick
 			
 		}
@@ -1234,6 +1237,34 @@ class Player{
 			$this->ackQueue = [];
 		}
 
+		if($this->sendingInventoryRequired){
+			
+			$pk = new ContainerSetContentPacket;
+			$pk->windowid = 0;
+			if($this->gmKickSoon){
+				$pk->slots = [];
+				$hotbar = [];
+			}else if($this->gamemode !== CREATIVE){
+				$hotbar = [];
+				foreach($this->hotbar as $slot){
+					$hotbar[] = $slot <= -1 ? -1 : $slot + 9;
+				}
+				$pk->slots = $this->inventory;
+			}else{
+				$pk->slots = [];
+				for($i = 0; $i < 9; ++$i){
+					[$id, $meta] = BlockAPI::$creative[$this->hotbar[$i]] ?? [0, 0];
+					$pk->slots[$i] = BlockAPI::getItem($id, $meta, 1);
+				}
+				$hotbar = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+				
+			}
+			$pk->hotbar = $hotbar;
+			$this->dataPacket($pk);
+			
+			$this->sendingInventoryRequired = false;
+		}
+		
 		if(($receiveCnt = count($this->receiveQueue)) > 0){
 			ksort($this->receiveQueue);
 			foreach($this->receiveQueue as $count => $packets){
@@ -1700,29 +1731,18 @@ class Player{
 				$pk = new LoginStatusPacket;
 				$pk->status = 0;
 				$this->dataPacket($pk);
-
-				$pk = new StartGamePacket;
-				$pk->seed = $this->level->getSeed();
-				$pk->x = $this->data->get("position")["x"];
-				$pk->y = $this->data->get("position")["y"];
-				$pk->z = $this->data->get("position")["z"];
-				$pk->generator = 0;
-				$pk->gamemode = $this->gamemode & 0x01;
-				$pk->eid = 0;
-				$this->dataPacket($pk);
-
-				if(($this->gamemode & 0x01) === 0x01){
-					$this->slot = 0;
-					$this->hotbar = [];
-				}elseif($this->data->exists("hotbar")){
+				
+				if($this->data->exists("hotbar")){
 					$this->hotbar = $this->data->get("hotbar");
-					$this->slot = $this->hotbar[0];
 				}else{
-					$this->slot = 0;
-					$this->hotbar = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+					if(($this->gamemode & 0x01) === 0x01) $this->hotbar = BlockAPI::$creativeHotbarSlots;
+					else $this->hotbar = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 				}
+				
+				$this->slot = $this->hotbar[0];
+				
 				for($i = 0; $i < count($this->hotbar); ++$i){
-					if($this->hotbar[$i] > 36) $this->hotbar[$i] = -1; //XXX unsafe?
+					if($this->hotbar[$i] > (($this->gamemode & 1) == 0 ? 36 : count(BlockAPI::$creative))) $this->hotbar[$i] = -1;
 					if($this->hotbar[$i] < -1) $this->hotbar[$i] = -1;
 				}
 				if($this->data->exists("slot-count")){
@@ -1930,6 +1950,7 @@ class Player{
 								array_unshift($this->hotbar, $this->slot);
 							}
 						}
+						
 						if(Player::$experimentalHotbar) $this->sendInventory();
 					}else{
 						$this->slot = $packet->slot;
@@ -2440,18 +2461,20 @@ class Player{
 				if($this->spawned === false or $this->blocked === true){
 					break;
 				}
-
-				if($this->lastCraft <= (microtime(true) - 1)){
-					if(isset($this->toCraft[-1])){
-						$this->toCraft = [-1 => $this->toCraft[-1]];
-					}else{
-						$this->toCraft = [];
+				if($packet->windowid === 0){ //crafting
+					
+					if(($this->gamemode & 1) == CREATIVE){ //sets hotbar item - works only in creative(-based) mode
+						if($this->gamemode == VIEW) break; //TODO maybe send inventory?
+						if($packet->slot < 0 || $packet->slot > 8) break;
+						$it = $packet->item;
+						$yes = BlockAPI::hasCreativeItem($it->getID(), $it->getMetadata());
+						if($yes === false){ //TODO maybe send inventory
+							break;
+						}
+						$this->hotbar[$packet->slot] = $yes;
+						return;
 					}
-					$this->craftingItems = [];
-				}
-
-				if($packet->windowid === 0){
-					$craft = false;
+					
 					$slot = $this->getSlot($packet->slot);
 
 					if($slot->count >= $packet->item->count && (($slot->getID() === $packet->item->getID() && $slot->getMetadata() === $packet->item->getMetadata()) || ($packet->item->getID() === AIR && $packet->item->count === 0)) && !isset($this->craftingItems[$packet->slot])){ //Crafting recipe
