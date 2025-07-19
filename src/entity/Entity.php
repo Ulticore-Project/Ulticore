@@ -168,7 +168,7 @@ class Entity extends Position
 			case ENTITY_PLAYER:
 				$this->player = $this->data["player"];
 				$this->setHealth($this->health, "generic");
-				$this->speedModifer = 1;
+				$this->speedModifer = 1.2;
 				$this->width = 0.6;
 				$this->height = 1.8;
 				$this->hasKnockback = true;
