@@ -375,6 +375,7 @@ class PlayerAPI{
 				"z" => $this->server->spawn->z,
 			],
 			"inventory" => array_fill(0, PLAYER_SURVIVAL_SLOTS, [AIR, 0, 0]),
+			"hotbar" => [0, 1, 2, 3, 4, 5, 6, 7, 8],
 			"armor" => array_fill(0, 4, [AIR, 0]),
 			"gamemode" => $this->server->gamemode,
 			"health" => 20,
@@ -383,32 +384,23 @@ class PlayerAPI{
 			"achievements" => [],
 			"slot-count" => 7
 		];
-		$ev = true;
-		$sav = false;
-		if(!file_exists(DATA_PATH . "players/$iname.yml")){
+
+		if(!file_exists(DATA_PATH . "players/" . $iname . ".yml")){
 			if(PocketMinecraftServer::$SAVE_PLAYER_DATA && $create){
-				console("[NOTICE] Player data not found for \"$iname\", creating new profile");
-				$data = new Config(DATA_PATH . "players/$iname.yml", CONFIG_YAML, $default);
-				$sav = true;
+				console("[NOTICE] Player data not found for \"" . $iname . "\", creating new profile");
+				$data = new Config(DATA_PATH . "players/" . $iname . ".yml", CONFIG_YAML, $default);
+				$data->save();
 			}else{
-				$data = new Config(DATA_PATH . "players/$iname.yml", CONFIG_YAML, $default);
-				$ev = false;
+				return new Config(DATA_PATH . "players/$iname.yml", CONFIG_YAML, $default);
 			}
-		}else{
-			$data = new Config(DATA_PATH . "players/$iname.yml", CONFIG_YAML, $default);
 		}
-		
+
+		$data = new Config(DATA_PATH . "players/" . $iname . ".yml", CONFIG_YAML, $default);
+
 		if(($data->get("gamemode") & 0x01) === 1){
 			$data->set("health", 20);
 		}
-		if(!$data->exists("hotbar")){
-			if(($data->get("gamemode") & 1) == CREATIVE) $hb = BlockAPI::$creativeHotbarSlots;
-			else $hb = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-			$data->set("hotbar", $hb);
-		}
-		if($ev) $this->server->handle("player.offline.get", $data);
-		if($sav) $data->save();
-		
+		$this->server->handle("player.offline.get", $data);
 		return $data;
 	}
 
