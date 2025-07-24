@@ -355,9 +355,9 @@ class PMFLevel extends PMF{
 			return INVISIBLE_BEDROCK;
 		}
 		
-		$X = $x >> 4;
-		$Z = $z >> 4;
-		$Y = $y >> 4;
+		$X = intval($x) >> 4;
+		$Z = intval($z) >> 4;
+		$Y = intval($y) >> 4;
 		$index = self::getIndex($X, $Z);
 		if(!isset($this->chunks[$index]) || $this->chunks[$index] === false || ($this->chunks[$index][$Y] === false)){
 			return 0;

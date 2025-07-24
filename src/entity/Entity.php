@@ -20,6 +20,7 @@ class Entity extends Position
 	public $needsUpdate = true;
 	public $speedModifer;
 	public $hasGravity;
+	public static $falldamage, $falldamagedistance;
 	/**
 	 * @var AxisAlignedBB
 	 */
@@ -906,22 +907,29 @@ class Entity extends Position
 		return $this->level->level->getBlockID($x, $y, $z) === LADDER;
 	}
 	
-	public function fall(){
-		if($this->isPlayer()){
-			
+	public function fall() {
+		if($this->isPlayer()) {
 			$x = floor($this->x);
-			$y = floor($this->y - 1); //TODO not 1
+			$y = floor($this->y - 1); // Block directly below player
 			$z = floor($this->z);
 			$bid = $this->level->level->getBlockID($x, $y, $z);
-			if($bid > 0){
+			
+			if($bid > 0) {
 				$clz = StaticBlock::getBlock($bid);
 				$clz::fallOn($this->level, $x, $y, $z, $this, ceil($this->fallStart - $this->y));
 			}
 			
-			$dmg = ceil($this->fallStart - $this->y - 3);
-			if($dmg > 0){
+			$fallDistance = $this->fallStart - $this->y;
+			$dmg = ceil($fallDistance - 3);
+			
+			// Only apply damage if fall distance is greater than configured
+			if($dmg > 0 && $fallDistance > self::$falldamagedistance && self::$falldamage != False) {
 				$this->harm($dmg, "fall");
 			}
+			
+			// Reset fall distance regardless of damage
+			$this->fallDistance = 0;
+			$this->fallStart = $this->y;
 		}
 	}
 	

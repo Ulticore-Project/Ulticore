@@ -15,7 +15,7 @@ class PocketMinecraftServer{
 	
 	public $doTick, $levelData, $tiles, $entities, $schedule, $scheduleCnt, $whitelist, $spawn, $difficulty, $stop, $asyncThread;
     public $nextTick = 0;
-	public static $KEEP_CHUNKS_LOADED = true, $PACKET_READING_LIMIT = 100;
+	public static $FORCE_20_TPS = false, $KEEP_CHUNKS_LOADED = true, $PACKET_READING_LIMIT = 100;
 	
 	function __construct($name, $gamemode = SURVIVAL, $seed = false, $port = 19132, $serverip = "0.0.0.0"){
 		$this->port = (int) $port;
@@ -98,14 +98,18 @@ class PocketMinecraftServer{
 			"experimental-mob-ai" => false,
 			"enable-mob-pushing" => Living::$entityPushing,
 			"keep-chunks-loaded" => self::$KEEP_CHUNKS_LOADED,
+			"force-20-tps" => false,
+			"use-experimental-hotbar" => Player::$experimentalHotbar,
 			
 			"Ulticore" =>[
 				"max-chunks-per-tick" => 4,
                 "view-distance" => 8,
 				"random-tick-speed" => 20,
+				"fall-damage" => true,
+				"fall-damage-distance" => 6 // Anything less means players take damage from stairs
 			],
-			"use-experimental-hotbar" => Player::$experimentalHotbar
 		]);
+
 		Player::$experimentalHotbar = $this->extraprops->get("use-experimental-hotbar");
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
         Player::$maxChunksPerTick = $this->extraprops->getNested("Ulticore.max-chunks-per-tick", 4);
@@ -115,6 +119,7 @@ class PocketMinecraftServer{
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Living::$entityPushing = $this->extraprops->get("enable-mob-pushing");
 		self::$KEEP_CHUNKS_LOADED = $this->extraprops->get("keep-chunks-loaded");
+		self::$FORCE_20_TPS = $this->extraprops->get("force-20-tps");
 		PocketMinecraftServer::$SAVE_PLAYER_DATA = $this->extraprops->get("save-player-data");
 		MobController::$ADVANCED = $this->extraprops->get("experimental-mob-ai");
 		Explosion::$enableExplosions = $this->extraprops->get("enable-explosions");
@@ -135,6 +140,9 @@ class PocketMinecraftServer{
 			console("[WARNING] To fix it - just remove it! Server will generate it again automatically.");
 		}
 		$dolog = $this->extraprops->get("save-console-data");
+		Entity::$falldamage = $this->extraprops->getNested("Ulticore.fall-damage");
+		Entity::$falldamagedistance = $this->extraprops->getNested("Ulticore.fall-damage-distance");
+
 	}
 
 	public function onShutdown(){
@@ -492,31 +500,52 @@ class PocketMinecraftServer{
 
 	public function process()
 	{
-        /*
-         * 改进的主循环
-         * 改进前（FORCE_20_TPS） CPU占用12% TPS20.5左右
-         * 改进后 CPU占用0.1 TPS 20.5
-         */
-        $this->nextTick = microtime(true);
-        while($this->stop === false){
-
-            $packetcnt = 0;
-			$packet = $this->interface->readPacket();
-			while($packet instanceof Packet){
-				$this->packetHandler($packet);
-				if(++$packetcnt > self::$PACKET_READING_LIMIT){
-					ConsoleAPI::warn("Reading more than ".self::$PACKET_READING_LIMIT." packets per tick! Forcing ticking!");
-					break;
+		$lastLoop = 0;
+		if(self::$FORCE_20_TPS){
+			while($this->stop === false){
+				$packetcnt = 0;
+				while($packet = $this->interface->readPacket()){
+					if($packet instanceof Packet) {
+						$this->packetHandler($packet);
+						if(++$packetcnt > self::$PACKET_READING_LIMIT){
+							ConsoleAPI::warn("Reading more than ".self::$PACKET_READING_LIMIT." packets per tick! Forcing ticking!");
+							break;
+						}
+					}
 				}
-				$packet = $this->interface->readPacket();
+				
+				$this->tick();
 			}
-
-            $this->tick();
-
-            if(($this->nextTick - 0.0001) > microtime(true)){
-                time_sleep_until($this->nextTick - 0.0001);
-            }
-        }
+		}else{
+			while($this->stop === false){
+				$packetcnt = 0;
+				startReadingAgain:
+				$packet = $this->interface->readPacket();
+				if($packet instanceof Packet){
+					$this->packetHandler($packet);
+					$lastLoop = 0;
+					if(++$packetcnt > self::$PACKET_READING_LIMIT){
+						ConsoleAPI::warn("Reading more than ".self::$PACKET_READING_LIMIT." packets per tick! Forcing ticking!");
+					}else{
+						goto startReadingAgain;
+					}
+				} elseif($this->tick() > 0){
+					$lastLoop = 0;
+				} else{
+					++$lastLoop;
+					if($lastLoop < 16){
+						usleep(1);
+					} elseif($lastLoop < 128){
+						usleep(100);
+					} elseif($lastLoop < 256){
+						usleep(512);
+					} else{
+						usleep(10000);
+					}
+				}
+				$this->tick();
+			}
+		}
 	}
 
 	public function packetHandler(Packet $packet){
