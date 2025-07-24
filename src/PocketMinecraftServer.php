@@ -114,9 +114,6 @@ class PocketMinecraftServer{
 		]);
 		Player::$experimentalHotbar = $this->extraprops->get("use-experimental-hotbar");
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
-        Player::$maxChunksPerTick = $this->extraprops->getNested("Ulticore.max-chunks-per-tick", 4);
-        Player::$viewDistance = $this->extraprops->getNested("Ulticore.view-distance", 8);
-		Level::$randomTickSpeed = $this->extraprops->getNested("Ulticore.random-tick-speed", 20);
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Living::$entityPushing = $this->extraprops->get("enable-mob-pushing");
@@ -126,6 +123,7 @@ class PocketMinecraftServer{
 		MobController::$ADVANCED = $this->extraprops->get("experimental-mob-ai");
 		Explosion::$enableExplosions = $this->extraprops->get("enable-explosions");
 		NetherReactorBlock::$enableReactor = $this->extraprops->get("enable-nether-reactor");
+		Entity::$keepInventory = $this->extraprops->get("keep-items-on-death");
 		if($this->extraprops->get("discord-msg") == true){
 			if($this->extraprops->get("discord-webhook-url") !== "none"){
 				console("[INFO] Discord Logger is enabled.");
@@ -142,7 +140,10 @@ class PocketMinecraftServer{
 			console("[WARNING] To fix it - just remove it! Server will generate it again automatically.");
 		}
 		$dolog = $this->extraprops->get("save-console-data");
-
+		
+        Player::$maxChunksPerTick = $this->extraprops->getNested("Ulticore.max-chunks-per-tick", 4);
+        Player::$viewDistance = $this->extraprops->getNested("Ulticore.view-distance", 8);
+		Level::$randomTickSpeed = $this->extraprops->getNested("Ulticore.random-tick-speed", 20);
 		Entity::$falldamage = $this->extraprops->getNested("Ulticore.fall-damage");
 		Entity::$falldamagedistance = $this->extraprops->getNested("Ulticore.fall-damage-distance");
 		Creature::$speedmodifier = $this->extraprops->getNested("Ulticore.mob-speed");
