@@ -100,7 +100,7 @@ class PocketMinecraftServer{
 			"keep-chunks-loaded" => self::$KEEP_CHUNKS_LOADED,
 			"force-20-tps" => false,
 			"use-experimental-hotbar" => Player::$experimentalHotbar,
-			"keep-items-on-death" => Entity::$keepInventory,
+			"keep-inventory" => Entity::$keepInventory,
 			
 			"Ulticore" =>[
 				"max-chunks-per-tick" => 4,
@@ -123,7 +123,7 @@ class PocketMinecraftServer{
 		MobController::$ADVANCED = $this->extraprops->get("experimental-mob-ai");
 		Explosion::$enableExplosions = $this->extraprops->get("enable-explosions");
 		NetherReactorBlock::$enableReactor = $this->extraprops->get("enable-nether-reactor");
-		Entity::$keepInventory = $this->extraprops->get("keep-items-on-death");
+		Entity::$keepInventory = $this->extraprops->get("keep-inventory");
 		if($this->extraprops->get("discord-msg") == true){
 			if($this->extraprops->get("discord-webhook-url") !== "none"){
 				console("[INFO] Discord Logger is enabled.");
@@ -140,7 +140,7 @@ class PocketMinecraftServer{
 			console("[WARNING] To fix it - just remove it! Server will generate it again automatically.");
 		}
 		$dolog = $this->extraprops->get("save-console-data");
-		
+
         Player::$maxChunksPerTick = $this->extraprops->getNested("Ulticore.max-chunks-per-tick", 4);
         Player::$viewDistance = $this->extraprops->getNested("Ulticore.view-distance", 8);
 		Level::$randomTickSpeed = $this->extraprops->getNested("Ulticore.random-tick-speed", 20);
