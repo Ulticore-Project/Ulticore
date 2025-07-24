@@ -106,7 +106,9 @@ class PocketMinecraftServer{
                 "view-distance" => 8,
 				"random-tick-speed" => 20,
 				"fall-damage" => true,
-				"fall-damage-distance" => 6 // Anything less means players take damage from stairs
+				"fall-damage-distance" => 6, // Anything less means players take damage from stairs
+				"mob-speed" => 1.5,
+
 			],
 		]);
 
@@ -140,8 +142,10 @@ class PocketMinecraftServer{
 			console("[WARNING] To fix it - just remove it! Server will generate it again automatically.");
 		}
 		$dolog = $this->extraprops->get("save-console-data");
+
 		Entity::$falldamage = $this->extraprops->getNested("Ulticore.fall-damage");
 		Entity::$falldamagedistance = $this->extraprops->getNested("Ulticore.fall-damage-distance");
+		Creature::$speedmodifier = $this->extraprops->getNested("Ulticore.mob-speed");
 
 	}
 

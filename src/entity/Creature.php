@@ -6,6 +6,7 @@ abstract class Creature extends Living{
 	public $inPanic;
 	public $closestPlayerEID = false;
 	public $closestPlayerDist = INF;
+	public static $speedmodifier;
 	
 	
 	public function __construct(Level $level, $eid, $class, $type = 0, $data = []){
@@ -51,7 +52,7 @@ abstract class Creature extends Living{
 	}
 	
 	public function getSpeedModifer(){
-		return 1.5;
+		return self::$speedmodifier;
 	}
 	public function getArmorValue(){
 		return 0;

@@ -3,8 +3,7 @@
 class TickAPI{
     private $server;
 
-    function __construct()
-    {
+    function __construct(){
         $this->server = ServerAPI::request();
     }
 
