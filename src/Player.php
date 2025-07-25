@@ -1797,7 +1797,7 @@ class Player{
 						$this->orderChunks();
 						$this->blocked = false;
 
-						$this->server->send2Discord($this->username . " joined the server");
+						$this->server->send2Discord($this->username . " joined the server!");
 						$this->server->handle("player.spawn", $this);
 						break;
 					case 2://Chunk loaded?
