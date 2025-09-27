@@ -1,3 +1,4 @@
+## PROJECT DEVELOPMENT IS UNDER PAUSE DUE TO LACK OF DEVELOPMENT USE NOSTALGIACORE!
 # Ulticore - A 0.8.1 Server
 
 [![License](https://img.shields.io/github/license/Ulticore-Project/Ulticore)]() [![Contributors](https://img.shields.io/github/contributors/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/last-commit/Ulticore-Project/Ulticore)]() [![](https://img.shields.io/github/downloads/Ulticore-Project/Ulticore/total)]() [![](https://img.shields.io/github/stars/Ulticore-Project/Ulticore
